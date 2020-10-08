@@ -4,6 +4,8 @@
 if [[ -z "$DISABLE_WEBAPP" ]]; then
     s6-setuidgid readsb /usr/sbin/lighttpd -tt -f /etc/lighttpd/lighttpd.conf || exit 0
 
+    set -eo pipefail
+
     #shellcheck disable=SC2016
     s6-setuidgid readsb /usr/sbin/lighttpd \
         -f /etc/lighttpd/lighttpd.conf \

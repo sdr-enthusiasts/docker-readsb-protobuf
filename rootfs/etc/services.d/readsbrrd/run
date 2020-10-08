@@ -25,12 +25,18 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
     export ul_message_rate ul_aircraft ul_tracks ul_range ul_maxima ul_rate_per_aircraft ul_adsb_cpu ul_range_uat
 
     if [[ -n "$VERBOSE_LOGGING" ]]; then
+
+        set -eo pipefail
+
         #shellcheck disable=SC2016
         /usr/local/bin/readsbrrd \
             --rrd-step "$READSBRRD_STEP" \
             --rrd-dir "/var/lib/collectd/rrd/localhost/readsb" \
         2>&1 | stdbuf -o0 awk '{print "[readsbrrd] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
     else
+
+        set -eo pipefail
+
         #shellcheck disable=SC2016
         /usr/local/bin/readsbrrd \
             --rrd-step "$READSBRRD_STEP" \

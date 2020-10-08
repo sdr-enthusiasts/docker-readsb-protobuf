@@ -5,6 +5,8 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
 
     s6-setuidgid readsb /usr/sbin/collectd -t -T -f -C /etc/collectd/collectd.conf || exit 0
 
+    set -eo pipefail
+
     #shellcheck disable=SC2016
     /usr/sbin/collectd \
         -C /etc/collectd/collectd.conf \
