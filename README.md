@@ -27,7 +27,7 @@ Tested and working on:
 
 ## Supported tags and respective Dockerfiles
 
-* `latest` should always contain the latest released versions of `rtl-sdr`, `bladeRF`, `libiio`, `libad9361-iio` and `readsb`. This image is built nightly from the [`master` branch](https://github.com/mikenye/docker-readsb-protobuf) [`Dockerfile`](https://github.com/mikenye/docker-readsb-protobuf/blob/master/Dockerfile) for all supported architectures.
+* `latest` should always contain the latest released versions of `rtl-sdr`, `bladeRF`, `libiio`, `libad9361-iio` and `readsb`. This image is built nightly from the [`main` branch](https://github.com/mikenye/docker-readsb-protobuf) [`Dockerfile`](https://github.com/mikenye/docker-readsb-protobuf/blob/main/Dockerfile) for all supported architectures.
 * `latest_nohealthcheck` is the same as the `latest` version above. However, this version has the docker healthcheck removed. This is done for people running platforms (such as [Nomad](https://www.nomadproject.io)) that don't support manually disabling healthchecks, where healthchecks are not wanted.
 * Specific version and architecture tags are available if required, however these are not regularly updated. It is generally recommended to run `latest`.
 
@@ -629,4 +629,4 @@ I also have a [Discord channel](https://discord.gg/sTf9uYF), feel free to [join]
 
 ## Changelog
 
-See the project's [commit history](https://github.com/mikenye/docker-readsb-protobuf/commits/master).
+See the project's [commit history](https://github.com/mikenye/docker-readsb-protobuf/commits/main).
