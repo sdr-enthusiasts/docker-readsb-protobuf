@@ -317,4 +317,4 @@ set -eo pipefail
 
 # shellcheck disable=SC2016
 "${READSB_BIN}" "${READSB_CMD[@]}" \
-  2>&1 | stdbuf -o0 awk '{print "[readsb] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}' | sed --unbuffered '/^$/d'
+  2>&1 | stdbuf -o0 sed --unbuffered '/^$/d' | stdbuf -o0 awk '{print "[readsb] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
