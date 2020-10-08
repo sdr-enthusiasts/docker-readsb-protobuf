@@ -423,6 +423,9 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
         # Re-start from current state/gain
         logger "Container restart detected, resuming auto-gain state '$(cat "$AUTOGAIN_STATE_FILE")' with gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
         
+        # Create running file so we can tell if the container has been restarted and we need to resume a previous run...
+        touch "$AUTOGAIN_RUNNING_FILE"
+        
         if [[ ! "$(cat "$AUTOGAIN_STATE_FILE")" == "finished" ]]; then
             echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
         fi
