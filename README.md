@@ -11,7 +11,10 @@ This image will configure a software-defined radio (SDR) to receive and decode M
 * `mikenye/adsbexchange` to feed ADSB data to [adsbexchange.com](https://adsbexchange.com)
 * `mikenye/piaware` to feed ADSB data into [flightaware.com](https://flightaware.com)
 * `mikenye/fr24feed` to feed ADSB data into [flightradar24.com](https://www.flightradar24.com)
-* `mikenye/piaware-to-influx` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualisation with [Grafana](https://grafana.com) and/or other tools
+* `mikenye/radarbox` to feed ADSB data into [radarbox.com](https://www.radarbox.com)
+* `mikenye/opensky-network` to feed ADSB data into [opensky-network.org](https://opensky-network.org/)
+* `mikenye/planefinder` to feed ADSB data into [planefinder.net](https://planefinder.net/)
+* `mikenye/adsb-to-influxdb` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualisation with [Grafana](https://grafana.com) and/or other tools
 * Any other tools that can receive Beast, BeastReduce, Basestation or the raw data feed from `readsb` or `dump1090` and their variants
 
 Tested and working on:
