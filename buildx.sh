@@ -14,7 +14,7 @@ docker buildx build --no-cache -t "${REPO}/${IMAGE}:latest" --compress --push --
 
 # Get readsb version from latest
 docker pull "${REPO}/${IMAGE}:latest"
-VERSION=$(docker run --rm --entrypoint cat "${REPO}/${IMAGE}:latest" /VERSIONS | grep readsb | cut -d " " -f 2)
+VERSION=$(docker run --rm --entrypoint readsb "${REPO}/${IMAGE}:latest" --version | cut -d " " -f 2)
 
 # Build & push version-specific
 docker buildx build -t "${REPO}/${IMAGE}:${VERSION}" --compress --push --platform "${PLATFORMS}" .
