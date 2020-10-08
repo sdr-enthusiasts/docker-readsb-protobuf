@@ -25,6 +25,41 @@ Tested and working on:
 * If you run on a different platform (or if you have issues) please raise an issue and let me know!
 * bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only RTL2832U as outlined above), but support for the devices is compiled in. If you have the hardware and would be willing to test, please [open an issue on GitHub](https://github.com/mikenye/docker-readsb-protobuf/issues).
 
+## Table of Contents
+
+* [mikenye/readsb-protobuf](#mikenyereadsb-protobuf)
+  * [Table of Contents](#table-of-contents)
+  * [Supported tags and respective Dockerfiles](#supported-tags-and-respective-dockerfiles)
+  * [Multi Architecture Support](#multi-architecture-support)
+  * [Prerequisites](#prerequisites)
+  * [Identifying your SDR's device path](#identifying-your-sdrs-device-path)
+  * [Up-and-Running with `docker run`](#up-and-running-with-docker-run)
+  * [Up-and-Running with Docker Compose](#up-and-running-with-docker-compose)
+  * [Testing the container](#testing-the-container)
+  * [Environment Variables](#environment-variables)
+    * [Container Options](#container-options)
+    * [`readsb` General Options](#readsb-general-options)
+    * [`readsb` Network Options](#readsb-network-options)
+      * [`READSB_NET_CONNECTOR` syntax](#readsb_net_connector-syntax)
+    * [`readsb` RTL-SDR Options](#readsb-rtl-sdr-options)
+    * [`readsb` BladeRF Options](#readsb-bladerf-options)
+    * [`readsb` Mode-S Beast Options](#readsb-mode-s-beast-options)
+    * [`readsb` GNS HULC Options](#readsb-gns-hulc-options)
+    * [`readsb` ADALM-Pluto SDR Options](#readsb-adalm-pluto-sdr-options)
+    * [`readsb` Graphs Options](#readsb-graphs-options)
+    * [Auto-Gain Options](#auto-gain-options)
+  * [Ports](#ports)
+  * [Paths & Volumes](#paths--volumes)
+  * [Auto-Gain system](#auto-gain-system)
+    * [Initialisation Stage](#initialisation-stage)
+    * [Fine-Tuning Stage](#fine-tuning-stage)
+    * [Finished Stage](#finished-stage)
+    * [State/Log/Stats Files](#statelogstats-files)
+    * [Forcing auto-gain to re-run from scrach](#forcing-auto-gain-to-re-run-from-scrach)
+  * [Advanced Usage: Creating an MLAT Hub](#advanced-usage-creating-an-mlat-hub)
+  * [Getting help](#getting-help)
+  * [Changelog](#changelog)
+
 ## Supported tags and respective Dockerfiles
 
 * `latest` should always contain the latest released versions of `rtl-sdr`, `bladeRF`, `libiio`, `libad9361-iio` and `readsb`. This image is built nightly from the [`main` branch](https://github.com/mikenye/docker-readsb-protobuf) [`Dockerfile`](https://github.com/mikenye/docker-readsb-protobuf/blob/main/Dockerfile) for all supported architectures.
