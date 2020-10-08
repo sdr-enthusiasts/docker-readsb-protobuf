@@ -614,12 +614,12 @@ In this example:
 
  * `readsb` reads and demodulates the ADSB data from the RTLSDR.
  * Other services (such as `adsbx`, `piaware` and `rbfeeder` - not shown) pull ADSB data from `readsb`, perform multilateration, and have their resulting MLAT data published on TCP port `30105`.
- * `mlathub` connects to the services providing MLAT results, and combines them into a single feed, available on TCP port `30105`.
- * `readsb` pulls these MLAT results (via a `READSB_NET_CONNECTOR`) so MLAT results show up in its webapp's performance graphs.
+ * `mlathub` connects to the services providing MLAT results (via `READSB_NET_CONNECTOR`), and combines them into a single feed, available on TCP port `30105` (via `READSB_NET_BEAST_OUTPUT_PORT=30105`).
+ * `readsb` pulls these MLAT results (via a `READSB_NET_CONNECTOR`) so MLAT results show up in its webapp. It is important to note that MLAT results are NOT fed to feeders, which is the desired approach.
  * `adsb2influxdb` pulls these MLAT results (via `MLATHOST`) so MLAT metrics are sent to InfluxDB.
  * `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
 
-**You must make absolutely certain that `READSB_FORWARD_MLAT` is not set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
+**You must make absolutely certain that `READSB_FORWARD_MLAT` is NOT set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
 
 ## Getting help
 
