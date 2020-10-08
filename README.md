@@ -479,11 +479,11 @@ The auto-gain system will work as follows:
 In the initialisation process:
 
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
-2. After one hour, auto-gain will check the percentage of strong messages.
+1. After one hour, auto-gain will check the percentage of strong messages.
    * If greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, no more results are collected for this gain level.
    * If not greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
-3. Gain level is lowered by one level.
-4. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
+1. Gain level is lowered by one level.
+1. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
 At this point, all of the tested gain levels are ranked, using the following methodology:
 
@@ -504,8 +504,8 @@ Auto-gain then moves onto the fine-tuning stage.
 In the fine-tuning process:
 
 1. `readsb` is set to maximum gain level chosen at the end of the initialisation process.
-2. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (24 hours by default).
-3. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
+1. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (24 hours by default).
+1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
 
 At this point, all of the tested gain levels are ranked, using the following methodology:
 
@@ -647,12 +647,12 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
 
 In this example:
 
- * `readsb` reads and demodulates the ADSB data from the RTLSDR.
- * Other services (such as `adsbx`, `piaware` and `rbfeeder` - not shown) pull ADSB data from `readsb`, perform multilateration, and have their resulting MLAT data published on TCP port `30105`.
- * `mlathub` connects to the services providing MLAT results (via `READSB_NET_CONNECTOR`), and combines them into a single feed, available on TCP port `30105` (via `READSB_NET_BEAST_OUTPUT_PORT=30105`).
- * `readsb` pulls these MLAT results (via a `READSB_NET_CONNECTOR`) so MLAT results show up in its webapp. It is important to note that MLAT results are NOT fed to feeders, which is the desired approach.
- * `adsb2influxdb` pulls these MLAT results (via `MLATHOST`) so MLAT metrics are sent to InfluxDB.
- * `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
+* `readsb` reads and demodulates the ADSB data from the RTLSDR.
+* Other services (such as `adsbx`, `piaware` and `rbfeeder` - not shown) pull ADSB data from `readsb`, perform multilateration, and have their resulting MLAT data published on TCP port `30105`.
+* `mlathub` connects to the services providing MLAT results (via `READSB_NET_CONNECTOR`), and combines them into a single feed, available on TCP port `30105` (via `READSB_NET_BEAST_OUTPUT_PORT=30105`).
+* `readsb` pulls these MLAT results (via a `READSB_NET_CONNECTOR`) so MLAT results show up in its webapp. It is important to note that MLAT results are NOT fed to feeders, which is the desired approach.
+* `adsb2influxdb` pulls these MLAT results (via `MLATHOST`) so MLAT metrics are sent to InfluxDB.
+* `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
 
 **You must make absolutely certain that `READSB_FORWARD_MLAT` is NOT set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
 
