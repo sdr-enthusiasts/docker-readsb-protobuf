@@ -249,7 +249,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 | `READSB_DEVICE_TYPE` | If using an SDR, set this to `rtlsdr`, `bladerf`, `modesbeast`, `gnshulc` or `plutosdr` depending on the model of your SDR. If not using an SDR, leave un-set. | `--device-type=<type>` | Unset |
 | `READSB_ENABLE_BIASTEE` | Set to any value to enable bias tee on supporting interfaces | `--enable-biastee` | Unset |
 | `READSB_FIX` | Set to any value to enable CRC single-bit error correction | `--fix` | Unset |
-| `READSB_FORWARD_MLAT` | Set this to any value to allow forwarding of received mlat results to output ports | `--forward-mlat` | Unset |
+| `READSB_FORWARD_MLAT` | Set this to any value to allow forwarding of received mlat results to output ports. Leave this unset unless you know what you're doing. | `--forward-mlat` | Unset |
 | `READSB_FREQ` | Set frequency (in MHz) | `--freq=<hz>` | `1090` |
 | `READSB_GAIN` | Set gain (in dB). Use `autogain` to have the container determine an appropriate gain, more on this below. | `--gain=<db>` | Max gain |
 | `READSB_GNSS` | Set this to any value to show altitudes as GNSS when available | `--gnss` | Unset |
@@ -514,6 +514,112 @@ All files for auto-gain are located at `/run/autogain` within the container. The
 ### Forcing auto-gain to re-run from scrach
 
 Run `docker exec <container_name> rm /run/autogain/state` to remove the current state. Within 15 minutes or so, auto-gain will detect this and re-start at initialisation stage.
+
+## Advanced Usage: Creating an MLAT Hub
+
+There may be reasons you wish to use `readsb` to combine MLAT feeds from different collectors, to feed into visualisation tools (eg: `mikenye/tar1090`) or data collectors (eg: `mikenye/adsb-to-influxdb`).
+
+To do this, you can create a second container to act as an MLAT hub.
+
+Here are example service definitions (from a `docker-compose.yml` file) for `readsb`, `mlathub`, `asup2influxdb` and `tar1090`.
+
+```yml
+...
+  readsb:
+    image: mikenye/readsb-protobuf:latest
+    tty: true
+    container_name: readsb
+    restart: always
+    devices:
+      - /dev/bus/usb/001/004:/dev/bus/usb/001/004
+    ports:
+      - 8079:8080
+      - 30003:30003
+      - 30005:30005
+    networks:
+      - adsbnet
+    environment:
+      - TZ=Australia/Perth
+      - READSB_DCFILTER=true
+      - READSB_DEVICE_TYPE=rtlsdr
+      - READSB_FIX=true
+      - READSB_GAIN=autogain
+      - READSB_LAT=-33.33333
+      - READSB_LON=111.11111
+      - READSB_MAX_RANGE=600
+      - READSB_MODEAC=true
+      - READSB_RX_LOCATION_ACCURACY=2
+      - READSB_STATS_RANGE=true
+      - READSB_NET_ENABLE=true
+      - READSB_NET_CONNECTOR=mlathub,30105,beast_in
+    volumes:
+      - readsbpb_rrd:/run/collectd
+      - readsbpb_autogain:/run/autogain
+
+  mlathub:
+    image: mikenye/readsb-protobuf:latest
+    tty: true
+    container_name: mlathub
+    restart: always
+    ports:
+      - 30105:30105
+    networks:
+      - adsbnet
+    environment:
+      - TZ=Australia/Perth
+      - DISABLE_PERFORMANCE_GRAPHS=true
+      - DISABLE_WEBAPP=true
+      - READSB_NET_ENABLE=true
+      - READSB_NET_ONLY=true
+      - READSB_FORWARD_MLAT=true
+      - READSB_NET_CONNECTOR=piaware,30105,beast_in;adsbx,30105,beast_in;rbfeeder,30105,beast_in
+      - READSB_NET_BEAST_OUTPUT_PORT=30105
+
+  adsb2influxdb:
+    image: mikenye/adsb-to-influxdb:latest
+    tty: true
+    container_name: adsb2influxdb
+    restart: always
+    environment:
+      - TZ=Australia/Perth
+      - INFLUXDBURL=http://influxdb:8086
+      - ADSBHOST=readsb
+      - MLATHOST=mlathub
+    networks:
+      - adsbnet
+
+  tar1090:
+    image: mikenye/tar1090:latest
+    tty: true
+    container_name: tar1090
+    restart: always
+    depends_on:
+      - readsb
+    environment:
+      - TZ=Australia/Perth
+      - BEASTHOST=readsb
+      - MLATHOST=mlathub
+      - LAT=-33.33333
+      - LONG=111.11111
+    volumes:
+      - "tar1090_heatmap:/var/globe_history"
+      - "tar1090_rundir:/run/readsb"
+    networks:
+      - adsbnet
+    ports:
+      - 8078:80
+```
+
+In this example:
+
+ * `readsb` reads and demodulates the ADSB data from the RTLSDR.
+ * Other services (such as `adsbx`, `piaware` and `rbfeeder` - not shown) pull ADSB data from `readsb`, perform multilateration, and have their resulting MLAT data published on TCP port `30105`.
+ * `mlathub` connects to the services providing MLAT results, and combines them into a single feed, available on TCP port `30105`.
+ * `readsb` pulls these MLAT results (via a `READSB_NET_CONNECTOR`) so MLAT results show up in its webapp's performance graphs.
+ * `adsb2influxdb` pulls these MLAT results (via `MLATHOST`) so MLAT metrics are sent to InfluxDB.
+ * `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
+
+**You must make absolutely certain that `READSB_FORWARD_MLAT` is not set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
 
 ## Getting help
 
