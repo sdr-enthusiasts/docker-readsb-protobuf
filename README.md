@@ -293,7 +293,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 
 #### `READSB_NET_CONNECTOR` syntax
 
-This variable allows you to configure outgoing connections. The variable takes a semicolon separated list of `ip,port,protocol`, where:
+This variable allows you to configure outgoing connections. The variable takes a semicolon (`;`) separated list of `ip,port,protocol`, where:
 
 * `ip` is an IP address. Specify an IP/hostname/containername for outgoing connections.
 * `port` is a TCP port number
