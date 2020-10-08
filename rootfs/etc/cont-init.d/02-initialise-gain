@@ -2,7 +2,7 @@
 # shellcheck shell=bash
 
 # How to check if autogain needs to be restarted at current state/gain
-rm "$AUTOGAIN_RUNNING_FILE" || true
+rm "$AUTOGAIN_RUNNING_FILE" > /dev/null 2>&1 || true
 
 # If gain is specified...
 if [[ -n "$READSB_GAIN" ]]; then
