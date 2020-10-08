@@ -1,0 +1,29 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# How to check if autogain needs to be restarted at current state/gain
+rm "$AUTOGAIN_RUNNING_FILE" || true
+
+# If gain is specified...
+if [[ -n "$READSB_GAIN" ]]; then
+
+    # If the user wants to use the autogain system...
+    if [[ "$READSB_GAIN" == "autogain" ]]; then
+
+        # Do we have a previously-stored gain value?
+        if [[ ! -e "$AUTOGAIN_CURRENT_VALUE_FILE" ]]; then
+            # if not, then set the gain file with the maximum gain
+            echo "49.6" > "$AUTOGAIN_CURRENT_VALUE_FILE"
+        fi
+
+        # set the gain file with the previous autogain file
+        cp "$AUTOGAIN_CURRENT_VALUE_FILE" "$GAIN_VALUE_FILE"
+
+    # If the user does not want to use the autogain system and has specified an actual gain figure, then use it
+    else
+        echo "$READSB_GAIN" > "$GAIN_VALUE_FILE"
+    fi
+else
+    # Otherwise, use readsb default of "auto gain" (ie: maximum)
+    echo "-10" > "$GAIN_VALUE_FILE"
+fi

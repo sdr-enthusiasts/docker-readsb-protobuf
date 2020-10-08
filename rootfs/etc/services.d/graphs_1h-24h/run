@@ -1,0 +1,76 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
+
+    # Set environment variables that these scripts expect
+
+    graph_size="$READSB_GRAPH_SIZE"
+    all_large="$READSB_GRAPH_ALL_LARGE"
+    font_size="$READSB_GRAPH_FONT_SIZE"
+    max_messages_line="$READSB_GRAPH_MAX_MESSAGES_LINE"
+    lwidth="$READSB_GRAPH_LARGE_WIDTH"
+    lheight="$READSB_GRAPH_LARGE_HEIGHT"
+    swidth="$READSB_GRAPH_SMALL_WIDTH"
+    sheight="$READSB_GRAPH_SMALL_HEIGHT"
+    ul_message_rate=
+    ul_aircraft=
+    ul_tracks=
+    ul_range=
+    ul_maxima=
+    ul_rate_per_aircraft=
+    ul_adsb_cpu=
+    ul_range_uat=
+    export graph_size all_large font_size max_messages_line lwidth lheight swidth sheight
+    export ul_message_rate ul_aircraft ul_tracks ul_range ul_maxima ul_rate_per_aircraft ul_adsb_cpu ul_range_uat
+
+    # Define functions
+
+    function run_graphs() {
+        # $1 = timeframe (eg: 1h, 6h, 12h, 24h)
+        if [[ -n "$VERBOSE_LOGGING" ]]; then
+            #shellcheck disable=SC2016
+            echo "Refreshing $1 graphs" | stdbuf -o0 awk '{print "[graphs] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+        fi
+        s6-setuidgid readsb ./graphs.sh "$1" > /dev/null 2>&1
+    }
+
+    # Wait a minute
+    sleep 60
+
+    pushd /usr/share/readsb/graphs > /dev/null || exit 1 
+
+    if [[ -e "/tmp/.next_graphs_1h" ]]; then
+        run_graphs 1h
+        rm "/tmp/.next_graphs_1h"
+        touch "/tmp/.next_graphs_6h"
+
+    elif [[ -e "/tmp/.next_graphs_6h" ]]; then
+        run_graphs 6h
+        rm "/tmp/.next_graphs_6h"
+        touch "/tmp/.next_graphs_12h"
+
+    elif [[ -e "/tmp/.next_graphs_12h" ]]; then
+        run_graphs 12h
+        rm "/tmp/.next_graphs_12h"
+        touch "/tmp/.next_graphs_24h"
+
+    elif [[ -e "/tmp/.next_graphs_24h" ]]; then
+        run_graphs 24h
+        rm "/tmp/.next_graphs_24h"
+        touch "/tmp/.next_graphs_1h"
+
+    else
+        #shellcheck disable=SC2016
+        echo "Initialising graphs" | stdbuf -o0 awk '{print "[graphs] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+        s6-setuidgid readsb ./boot.sh > /dev/null 2>&1
+        touch "/tmp/.next_graphs_1h"
+        touch "/tmp/.next_graphs_7d"
+
+    fi
+
+    popd > /dev/null || exit 1 
+
+else
+    sleep 86400
+fi

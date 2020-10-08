@@ -1,0 +1,320 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+# Set readsb binary
+READSB_BIN="/usr/local/bin/readsb"
+
+##### DEFAULT OPTIONS #####
+
+# Listen on 0.0.0.0
+READSB_CMD=("--net-bind-address=0.0.0.0")
+
+# Set quiet mode (TODO: unless verbose?)
+READSB_CMD+=("--quiet")
+
+# TODO: Only do this if webserver is enabled
+# Set path for protobuf output files
+READSB_CMD+=("--write-output=/run/readsb")
+
+##### GENERAL OPTIONS #####
+
+# Handle "--dcfilter"
+if [[ -n "$READSB_DCFILTER" ]]; then
+    READSB_CMD+=("--dcfilter")
+fi
+
+# Handle "--device-type"
+if [[ -n "$READSB_DEVICE_TYPE" ]]; then
+    READSB_CMD+=("--device-type=$READSB_DEVICE_TYPE")
+fi
+
+# Handle "--enable-biastee"
+if [[ -n "$READSB_ENABLE_BIASTEE" ]]; then
+    READSB_CMD+=("--enable-biastee")
+fi
+
+# Handle "--fix"
+#shellcheck disable=SC2153
+if [[ -n "$READSB_FIX" ]]; then
+    READSB_CMD+=("--fix")
+fi
+
+# Handle "--forward-mlat"
+if [[ -n "$READSB_FORWARD_MLAT" ]]; then
+    READSB_CMD+=("--forward-mlat")
+fi
+
+# Handle "--freq=<hz>"
+if [[ -n "$READSB_FREQ" ]]; then
+    READSB_CMD+=("--freq=$READSB_FREQ")
+fi
+
+# Handle "--gain=<db>"
+# TODO - write specified gain to a file in a cont-init.d script,
+# so we can change gain using an auto-gain script and tell s6 to restart this service.
+# We can then read the gain from the file here.
+# If file doesn't exist then go with max gain.
+# if [[ -n "$READSB_GAIN" ]]; then
+#     READSB_CMD+=("--gain=$READSB_GAIN")
+# fi
+if [[ -e "$GAIN_VALUE_FILE" ]]; then
+    READSB_CMD+=("--gain=$(cat "$GAIN_VALUE_FILE")")
+fi
+
+# Handle "--gnss"
+if [[ -n "$READSB_GNSS" ]]; then
+    READSB_CMD+=("--gnss")
+fi
+
+# Handle "--lat=<lat>"
+if [[ -n "$READSB_LAT" ]]; then
+    READSB_CMD+=("--lat=$READSB_LAT")
+fi
+
+# Handle "--lon=<lon>"
+#shellcheck disable=SC2153
+if [[ -n "$READSB_LON" ]]; then
+    READSB_CMD+=("--lon=$READSB_LON")
+fi
+
+# Handle "--max-range=<dist>"
+if [[ -n "$READSB_MAX_RANGE" ]]; then
+    READSB_CMD+=("--max-range=$READSB_MAX_RANGE")
+fi
+
+# Handle "--metric"
+if [[ -n "$READSB_METRIC" ]]; then
+    READSB_CMD+=("--metric")
+fi
+
+# Handle "--mlat"
+if [[ -n "$READSB_MLAT" ]]; then
+    READSB_CMD+=("--mlat")
+fi
+
+# Handle "--modeac"
+if [[ -n "$READSB_MODEAC" ]]; then
+    READSB_CMD+=("--modeac")
+fi
+
+# Handle "--no-crc-check"
+if [[ -n "$READSB_NO_CRC_CHECK" ]]; then
+    READSB_CMD+=("--no-crc-check")
+fi
+
+# Handle "--no-fix"
+if [[ -n "$READSB_NO_FIX" ]]; then
+    READSB_CMD+=("--no-fix")
+fi
+
+# Handle "--no-modeac-auto"
+if [[ -n "$READSB_NO_MODEAC_AUTO" ]]; then
+    READSB_CMD+=("--no-modeac-auto")
+fi
+
+# Handle "--rx-location-accuracy=<n>"
+if [[ -n "$READSB_RX_LOCATION_ACCURACY" ]]; then
+    READSB_CMD+=("--rx-location-accuracy=$READSB_RX_LOCATION_ACCURACY")
+fi
+
+# Handle "--stats-every=<sec>"
+if [[ -n "$READSB_STATS_EVERY" ]]; then
+    READSB_CMD+=("--stats-every=$READSB_STATS_EVERY")
+fi
+
+# Handle "--stats-range"
+if [[ -n "$READSB_STATS_RANGE" ]]; then
+    READSB_CMD+=("--stats-range")
+fi
+
+##### NETWORK OPTIONS #####
+
+# Handle "--net"
+if [[ -n "$READSB_NET_ENABLE" ]]; then
+    READSB_CMD+=("--net")
+fi
+
+# Handle "--net-beast-reduce-interval=<seconds>"
+if [[ -n "$READSB_NET_BEAST_REDUCE_INTERVAL" ]]; then
+    READSB_CMD+=("--net-beast-reduce-interval=$READSB_NET_BEAST_REDUCE_INTERVAL")
+fi
+
+# Handle "--net-beast-reduce-out-port=<ports>"
+if [[ -n "$READSB_NET_BEAST_REDUCE_OUT_PORT" ]]; then
+    READSB_CMD+=("--net-beast-reduce-out-port=$READSB_NET_BEAST_REDUCE_OUT_PORT")
+fi
+
+# Handle "--net-bi-port=<ports>"
+if [[ -n "$READSB_NET_BEAST_INPUT_PORT" ]]; then
+    READSB_CMD+=("--net-bi-port=$READSB_NET_BEAST_INPUT_PORT")
+fi
+
+# Handle "--net-bo-port=<ports>"
+if [[ -n "$READSB_NET_BEAST_OUTPUT_PORT" ]]; then
+    READSB_CMD+=("--net-bo-port=$READSB_NET_BEAST_OUTPUT_PORT")
+fi
+
+# Handle "--net-buffer=<n>"
+if [[ -n "$READSB_NET_BUFFER" ]]; then
+    READSB_CMD+=("--net-buffer=$READSB_NET_BUFFER")
+fi
+
+# Handle "--net-connector=<ip,port,protocol>"
+if [[ -n "$READSB_NET_CONNECTOR" ]]; then
+    IFS=';' read -r -a READSB_NET_CONNECTOR_ARRAY <<< "$READSB_NET_CONNECTOR"
+    for NET_CONNECTOR_ELEMENT in "${READSB_NET_CONNECTOR_ARRAY[@]}"
+    do
+        READSB_CMD+=("--net-connector=$NET_CONNECTOR_ELEMENT")
+    done
+fi
+
+# Handle "--net-connector-delay=<seconds>"
+if [[ -n "$READSB_NET_CONNECTOR_DELAY" ]]; then
+    READSB_CMD+=("--net-connector-delay=$READSB_NET_CONNECTOR_DELAY")
+fi
+
+# Handle "--net-heartbeat=<rate>"
+if [[ -n "$READSB_NET_HEARTBEAT" ]]; then
+    READSB_CMD+=("--net-heartbeat=$READSB_NET_HEARTBEAT")
+fi
+
+# Handle "--net-only"
+if [[ -n "$READSB_NET_ONLY" ]]; then
+    READSB_CMD+=("--net-only")
+fi
+
+# Handle "--net-ri-port=<ports>"
+if [[ -n "$READSB_NET_RAW_INPUT_PORT" ]]; then
+    READSB_CMD+=("--net-ri-port=$READSB_NET_RAW_INPUT_PORT")
+fi
+
+# Handle "--net-ro-interval=<rate>"
+if [[ -n "$READSB_NET_RAW_OUTPUT_INTERVAL" ]]; then
+    READSB_CMD+=("--net-ro-interval=$READSB_NET_RAW_OUTPUT_INTERVAL")
+fi
+
+# Handle "--net-ri-port=<ports>"
+if [[ -n "$READSB_NET_RAW_OUTPUT_PORT" ]]; then
+    READSB_CMD+=("--net-ro-port=$READSB_NET_RAW_OUTPUT_PORT")
+fi
+
+# Handle "--net-ro-size=<size>"
+if [[ -n "$READSB_NET_RAW_OUTPUT_SIZE" ]]; then
+    READSB_CMD+=("--net-ro-size=$READSB_NET_RAW_OUTPUT_SIZE")
+fi
+
+# Handle "--net-sbs-in-port=<ports>"
+if [[ -n "$READSB_NET_SBS_INPUT_PORT" ]]; then
+    READSB_CMD+=("--net-sbs-in-port=$READSB_NET_SBS_INPUT_PORT")
+fi
+
+# Handle "--net-sbs-port=<ports>"
+if [[ -n "$READSB_NET_SBS_OUTPUT_PORT" ]]; then
+    READSB_CMD+=("--net-sbs-port=$READSB_NET_SBS_OUTPUT_PORT")
+fi
+
+# Handle "--net-verbatim"
+if [[ -n "$REASSB_NET_VERBATIM" ]]; then
+    READSB_CMD+=("--net-verbatim")
+fi
+
+# Handle "--net-vrs-port=<ports>"
+if [[ -n "$READSB_NET_VRS_PORT" ]]; then
+    READSB_CMD+=("--net-vrs-port=$READSB_NET_VRS_PORT")
+fi
+
+##### RTL-SDR OPTIONS #####
+
+# Handle "--device=<index|serial>"
+if [[ -n "$READSB_RTLSDR_DEVICE" ]]; then
+    READSB_CMD+=("--device=$READSB_RTLSDR_DEVICE")
+fi
+
+# Handle "--enable-agc"
+if [[ -n "$READSB_RTLSDR_ENABLE_AGC" ]]; then
+    READSB_CMD+=("--enable-agc")
+fi
+
+# Handle "--ppm=<correction>"
+if [[ -n "$READSB_RTLSDR_PPM" ]]; then
+    READSB_CMD+=("--ppm=$READSB_RTLSDR_PPM")
+fi
+
+##### BLADERF OPTIONS #####
+
+# Handle "--device=<ident>"
+if [[ -n "$READSB_BLADERF_DEVICE" ]]; then
+    READSB_CMD+=("--device=$READSB_BLADERF_DEVICE")
+fi
+
+# Handle "--bladerf-bandwidth=<hz>"
+if [[ -n "$READSB_BLADERF_BANDWIDTH" ]]; then
+    READSB_CMD+=("--bladerf-bandwidth=$READSB_BLADERF_BANDWIDTH")
+fi
+
+# Handle "--bladerf-decimation=<N>"
+if [[ -n "$READSB_BLADERF_DECIMATION" ]]; then
+    READSB_CMD+=("--bladerf-decimation=$READSB_BLADERF_DECIMATION")
+fi
+
+# Handle "--bladerf-fpga=<path>"
+if [[ -n "$READSB_BLADERF_FPGA" ]]; then
+    READSB_CMD+=("--bladerf-fpga=\"$READSB_BLADERF_FPGA\"")
+fi
+
+##### MODE-S BEAST OPTIONS #####
+
+# Handle "--beast-crc-off"
+if [[ -n "$READSB_BEAST_CRC_OFF" ]]; then
+    READSB_CMD+=("--beast-crc-off")
+fi
+
+# Handle "--beast-df045-on"
+if [[ -n "$READSB_BEAST_DF045_ON" ]]; then
+    READSB_CMD+=("--beast-df045-on")
+fi
+
+# Handle "--beast-df1117-on"
+if [[ -n "$READSB_BEAST_DF1117_ON" ]]; then
+    READSB_CMD+=("--beast-df1117-on")
+fi
+
+# Handle "--beast-fec-off"
+if [[ -n "$READSB_BEAST_FEC_OFF" ]]; then
+    READSB_CMD+=("--beast-fec-off")
+fi
+
+# Handle "--beast-mlat-off"
+if [[ -n "$READSB_BEAST_MLAT_OFF" ]]; then
+    READSB_CMD+=("--beast-mlat-off")
+fi
+
+# Handle "--beast-modeac"
+if [[ -n "$READSB_BEAST_MODEAC" ]]; then
+    READSB_CMD+=("--beast-modeac")
+fi
+
+# Handle "--beast-serial=<path>"
+if [[ -n "$READSB_BEAST_SERIAL" ]]; then
+    READSB_CMD+=("--beast-serial=$READSB_BEAST_SERIAL")
+fi
+
+##### ADALM-Pluto SDR OPTIONS #####
+
+# Handle "--pluto-network=<hostname or IP>"
+if [[ -n "$READSB_PLUTO_NETWORK" ]]; then
+    READSB_CMD+=("--pluto-network=$READSB_PLUTO_NETWORK")
+fi
+
+# Handle "--pluto-uri=<USB uri>"
+if [[ -n "$READSB_PLUTO_URI" ]]; then
+    READSB_CMD+=("--pluto-uri=$READSB_PLUTO_URI")
+fi
+
+##### LAUNCH READSB #####
+
+set -eo pipefail
+
+# shellcheck disable=SC2016
+"${READSB_BIN}" "${READSB_CMD[@]}" \
+  2>&1 | stdbuf -o0 awk '{print "[readsb] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
