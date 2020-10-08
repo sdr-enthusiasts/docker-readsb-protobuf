@@ -75,7 +75,7 @@ Plug in your USB radio, and run the command `lsusb`. Find your radio. It'll look
 Bus 001 Device 004: ID 0bda:2832 Realtek Semiconductor Corp. RTL2832U DVB-T
 ```
 
-Take note of the bus number, and device number. In the output above, its 001 and 004 respectively. This will be used in the examples below.
+Take note of the **USB bus number**, and **USB device number**. In the output above, its **001** and **004** respectively. This will be used in the examples below.
 
 ## Up-and-Running with `docker run`
 
@@ -319,7 +319,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 
 | Variable | Description | Controls which `readsb` option | Default |
 |----------|-------------|--------------------------------|---------|
-| `READSB_RTLSDR_DEVICE` | Select device by index or serial number. | `--device=<index|serial>` | Unset |
+| `READSB_RTLSDR_DEVICE` | Select device by index or serial number. | `--device=<index or serial>` | Unset |
 | `READSB_RTLSDR_ENABLE_AGC` | Set this to any value to enable digital AGC (not tuner AGC!) | `--enable-agc` | Unset |
 | `READSB_RTLSDR_PPM` | Set oscillator frequency correction in PPM | `--ppm=<correction>` | Unset |
 
@@ -398,8 +398,8 @@ These variables control the auto-gain system (explained further below). These sh
 | `AUTOGAIN_INITIAL_PERIOD` | How long each gain level should be measured during auto-gain initialisation (ie: "roughing in"), in seconds. | `7200` (2 hours) |
 | `AUTOGAIN_FINETUNE_PERIOD` | How long each gain level should be measured during auto-gain fine-tuning, in seconds. | `86400` (24 hours) |
 | `AUTOGAIN_FINISHED_PERIOD` | How long between the completion of fine-tuning (and ultimetly setting a preferred gain), and re-running the entire process. | `31536000` (1 year) |
-| `AUTOGAIN_MAX_GAIN_VALUE` | The maximum gain setting that will be used by auto-gain. | `49.6` (max supported by `readsb`) |
-| `AUTOGAIN_MIN_GAIN_VALUE` | The minimum gain setting that will be used by auto-gain. | `0.0` (min supported by `readsb`) |
+| `AUTOGAIN_MAX_GAIN_VALUE` | The maximum gain setting in dB that will be used by auto-gain. | `49.6` (max supported by `readsb`) |
+| `AUTOGAIN_MIN_GAIN_VALUE` | The minimum gain setting in dB that will be used by auto-gain. | `0.0` (min supported by `readsb`) |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` | The maximum percentage of "strong messages" auto-gain will aim for. | `5.0` |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` | The minimum percentage of "strong messages" auto-gain will aim for. | `1.0` |
 
@@ -410,6 +410,17 @@ These variables control the auto-gain system (explained further below). These sh
 | `8080/tcp` | `readsb` web interface |
 
 In addition to the ports listed above, depending on your `readsb` configuration the container may also be listening on other ports that you'll need to map through (if external connectivity is required).
+
+Some common ports are as follows (which may or may not be in use depending on your configuration):
+
+| Port | Details |
+|------|---------|
+| `30001/tcp` | Raw protocol input |
+| `30002/tcp` | Raw protocol output |
+| `30003/tcp` | SBS/Basestation protocol output |
+| `30004/tcp` | Beast protocol input |
+| `30005/tcp` | Beast protocol output |
+| `30104/tcp` | Beast protocol input |
 
 ## Paths & Volumes
 
