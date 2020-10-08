@@ -436,7 +436,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
         case "$(cat "$AUTOGAIN_STATE_FILE")" in
             init | finetune)
 
-                # Initial state to quickly get to a gain level that's close to optimal
+                # States to get to an optimal gain level
 
                 # if it's time to review the current gain setting...
                 if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
@@ -584,6 +584,9 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                 ;;
 
             finished)
+
+                # Steady state (basically do nothing for a year)
+
                 # if it's time to review the current gain setting...
                 if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
                     # re-run autogain process
