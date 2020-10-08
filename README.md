@@ -446,7 +446,7 @@ In the initialisation process:
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
 2. After one hour, auto-gain will check the percentage of strong messages.
    * If greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, no more results are collected for this gain level.
-   * If not greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, results are collected up to `AUTOGAIN_INITIAL_PERIOD` (1 hour by default).
+   * If not greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
 3. Gain level is lowered by one level.
 4. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
