@@ -440,6 +440,7 @@ These variables control the auto-gain system (explained further below). These sh
 | `AUTOGAIN_MIN_GAIN_VALUE` | The minimum gain setting in dB that will be used by auto-gain. | `0.0` (min supported by `readsb`) |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` | The maximum percentage of "strong messages" auto-gain will aim for. | `5.0` |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` | The minimum percentage of "strong messages" auto-gain will aim for. | `1.0` |
+| `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | The minimum number of successfully accepted messages per gain level measured. | `500000` |
 
 ## Ports
 
