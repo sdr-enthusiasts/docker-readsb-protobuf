@@ -453,6 +453,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             logger "Insufficient messages received for accurate measurement, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
                             # Set review time 
                             echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+
+                            # TODO - limit number of retries...
                         
                         else
 
