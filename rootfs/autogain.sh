@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 
+# temp for troubleshooting
+set -x
+
 # Define globals
 
 # Define valid gain levels
@@ -41,6 +44,7 @@ READSB_PROTO_PATH="/opt/readsb-protobuf"
 
 # Files containing variables to persist between runs of this script
 AUTOGAIN_LOGFILE="/run/autogain/autogain_log"
+echo "" >> "$AUTOGAIN_LOGFILE"
 # longest range (max_distance_in_metres)
 AUTOGAIN_STATS_MAX_DISTANCE_FILE="/run/autogain/autogain_stats.max_distance"
 # percentage strong messages (local_strong_signals/local_accepted)
@@ -80,11 +84,52 @@ function logger_verbose() {
     echo "$(date --rfc-3339=s) [$(cat "$AUTOGAIN_STATE_FILE")] $1" >> "$AUTOGAIN_LOGFILE"
 }
 
+function logger_debug() {
+    # Log to the log file only
+    # $1 = log message
+    # -----
+    echo "$(date --rfc-3339=s) [$(cat "$AUTOGAIN_STATE_FILE")] DEBUG: $1" >> "$AUTOGAIN_LOGFILE"
+}
+
+function increase_review_timestamp() {
+    logger_debug "Entering: increase_review_timestamp"
+    # Set review time 
+    local new_timestamp
+    new_timestamp="$(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE")))"
+    logger_debug "Setting review timestamp to: $new_timestamp"
+    echo "$new_timestamp" > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+    logger_debug "Exiting: increase_review_timestamp"
+}
+
+function review_is_due() {
+    logger_debug "Entering: review_is_due"
+    # Check if it is time to review
+    if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
+        logger_debug "Review is due"
+    else
+        logger_debug "Review is not yet due"
+        return 1
+    fi
+}
+
+function sufficient_local_accepted() {
+    logger_debug "Entering: sufficient_local_accepted"
+    # Check if sufficient local_accepted
+    # $1 = number of local_accepted we should have
+    # -----
+    if [[ "$(get_readsb_stat total local_accepted)" -ge "$1" ]]; then
+        logger_debug "Sufficient local_accepted"
+    else
+        logger_debug "Insufficient local_accepted"
+        return 1
+    fi
+}
+
 function get_gain_number() {
     # Get the array element number of a gain value
     # $1 = gain figure (a value in gain_levels)
     # -----
-    logger_verbose "DEBUG: Entering: get_gain_number"
+    logger_debug "Entering: get_gain_number"
     for ((i = 0 ; i < ${#gain_levels[@]} ; i++)); do
         if [[ "${gain_levels[$i]}" == "$1" ]]; then
             logger_verbose "DEBUG: Gain $1 dB is gain level $i"
@@ -92,13 +137,14 @@ function get_gain_number() {
             break
         fi
     done
+    logger_debug "Exiting: get_gain_number"
 }
 
 function set_readsb_gain() {
     # Set readsb gain
     # $1 = gain figure (a value in gain_levels)
     # -----
-    logger_verbose "DEBUG: Entering: set_readsb_gain"
+    logger_debug "Entering: set_readsb_gain"
     # Update gain files
     logger_verbose "Setting gain to $1 dB"
     echo "$1" > "$AUTOGAIN_CURRENT_VALUE_FILE"
@@ -110,6 +156,7 @@ function set_readsb_gain() {
 
     # Store timestamp gain was updated
     date +%s > "$AUTOGAIN_CURRENT_TIMESTAMP_FILE"
+    logger_debug "Exiting: set_readsb_gain"
 }
 
 function get_readsb_stat() {
@@ -117,7 +164,7 @@ function get_readsb_stat() {
     # $1 = section ('total', 'latest', 'last_1min', etc - from protobuf .proto)
     # $2 = key (from latest)
     # -----
-    logger_verbose "DEBUG: Entering: get_readsb_stat"
+    logger_debug "Entering: get_readsb_stat"
     # Get latest section from protobuf, get line including the key we're after:
     local returnvalue
     returnvalue=$(protoc \
@@ -137,7 +184,7 @@ function get_readsb_stat() {
         # Return the value only
         cut -d ':' -f 2)
 
-    logger_verbose "DEBUG: readsb stat $1:$2 = $returnvalue"
+    logger_debug "readsb stat $1:$2 = $returnvalue"
 
     if [[ -z "$returnvalue" ]]; then
         logger_verbose "Error looking up $1:$2 from readsb stats!"
@@ -145,13 +192,14 @@ function get_readsb_stat() {
     fi
 
     echo "$returnvalue"
+    logger_debug "Exiting: get_readsb_stat"
 }
 
 function are_required_stats_available() {
     # Ensures all required stats are available from readsb's stats.pb
     # Make sure any required stats are added and this function is called prior to interpreting any results
     # -----
-    logger_verbose "DEBUG: Entering: are_required_stats_available"
+    logger_debug "Entering: are_required_stats_available"
     local stats_used
     stats_used=()
     # don't need to worry about strong signals, if not available we use zero.
@@ -166,40 +214,47 @@ function are_required_stats_available() {
         # Word splitting is by design in the commands below, so disable the shellcheck alert
         #shellcheck disable=SC2086
         if ! get_readsb_stat $stat_used > /dev/null; then
-            logger_verbose "DEBUG: Stat $(echo $stat_used | tr ' ' ':') not yet available."
+            logger_debug "Stat $(echo $stat_used | tr ' ' ':') not yet available."
             return 1
         fi
     done
+    logger_debug "Exiting: are_requird_stats_available"
 }
 
 function get_pct_strong_signals() {
     # Return the percentage of "strong signals"
     # -----
-    logger_verbose "DEBUG: Entering: get_pct_strong_signals"
+    logger_debug "Entering: get_pct_strong_signals"
     local local_strong_signals
     local local_accepted
+    local pct_strong_signals
     if ! local_strong_signals=$(get_readsb_stat total local_strong_signals); then
+        logger_debug "No 'local_strong_signals' measurement! Setting to 0."
         local_strong_signals=0
     fi
     local_accepted=$(get_readsb_stat total local_accepted)
-    echo "scale=2; ($local_strong_signals / $local_accepted) * 100" | bc -l
+    pct_strong_signals="$(echo "scale=2; ($local_strong_signals / $local_accepted) * 100" | bc -l)"
+    logger_debug "Percentage of strong signals: $pct_strong_signals"
+    echo "$pct_strong_signals"
+    logger_debug "Exiting: get_pct_strong_signals"
 }
 
 function get_snr() {
     # Return the signal to noise ratio (local_signal - local_noise)
     # -----
-    logger_verbose "DEBUG: Entering: get_snr"
+    logger_debug "Entering: get_snr"
     local local_signal
     local local_noise
     local_signal=$(get_readsb_stat total local_signal)
     local_noise=$(get_readsb_stat total local_noise)
     echo "$local_signal - $local_noise" | bc -l
+    logger_debug "Exiting: get_snr"
 }
 
 function reduce_gain() {
     # Reduce the current gain by one step
     # -----
-    logger_verbose "DEBUG: Entering: reduce_gain"
+    logger_debug "Entering: reduce_gain"
     local gain_number
     gain_number="$(get_gain_number "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE")")"
     gain_number=$((gain_number - 1))
@@ -208,18 +263,20 @@ function reduce_gain() {
     fi
     logger "Reducing gain to: ${gain_levels[$gain_number]} dB"
     set_readsb_gain "${gain_levels[$gain_number]}"
+    logger_debug "Exiting: reduce_gain"
 }
 
 function rm_stats_files () {
-    logger_verbose "DEBUG: Entering: rm_stats_files"
+    logger_debug "Entering: rm_stats_files"
     # Remove statistics files
     rm "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_SNR_FILE" > /dev/null 2>&1 || true
+    logger_debug "Exiting: rm_stats_files"
 }
 
-function autogain_initialize () {
+function autogain_change_into_state () {
     # Initialise auto-gain state
     # $1 = state name (init)
     # $2 = seconds until next check
@@ -228,7 +285,7 @@ function autogain_initialize () {
     # Set state to $1 (state name)
     echo "$1" > "$AUTOGAIN_STATE_FILE"
     logger "Entering auto-gain stage: $1"
-    logger_verbose "DEBUG: Entering: autogain_initialize"
+    logger_debug "Entering: autogain_change_into_state"
 
     # Create running file so we can tell if the container has been restarted and we need to resume a previous run...
     touch "$AUTOGAIN_RUNNING_FILE"
@@ -256,21 +313,22 @@ function autogain_initialize () {
 
         # We should already be at max gain, check to make sure (maybe user wants to re-run autogain from scratch)
         if [[ $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") == $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE") ]]; then
-            logger_verbose "Gain set to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
+            logger_debug "Gain set to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
         
         # If not at max gain, we should be, so set it
         else
-            logger_verbose "Setting gain to maximum ($(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE")) dB"
+            logger_debug "Setting gain to maximum $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE") dB"
             set_readsb_gain "$(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE")"
         fi
     fi
+    logger_debug "Exiting: autogain_change_into_state"
 }
 
 function gather_statistics () {
     # Gather statistics from readsb into stats files
     # -----
 
-    logger_verbose "DEBUG: Entering: gather_statistics"
+    logger_debug "Entering: gather_statistics"
 
     # Write statistics for this gain level
 
@@ -285,14 +343,15 @@ function gather_statistics () {
 
     # best SNR (local_signal - local_noise)
     echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_snr)" >> "$AUTOGAIN_STATS_SNR_FILE"
-    
+
+    logger_debug "Exiting: gather_statistics"   
 }
 
 function rank_gain_levels () {
     # Ranks the gain levels to determine a suitable range
     # -----
     
-    logger_verbose "DEBUG: Entering: rank_gain_levels"
+    logger_debug "Entering: rank_gain_levels"
 
     # Prepare gain_rank dictionary with all tested gain levels
     declare -A gain_rank
@@ -396,14 +455,72 @@ function rank_gain_levels () {
     while read -r line; do
         gain_level_points=$(echo "$line" | cut -d ':' -f 2)
         gain_level_value=$(echo "$line" | cut -d ':' -f 1)
+        logger_verbose "Gain level: $gain_level_value has $gain_level_points points."
         if [[ "$gain_level_points" -gt "$best_gain_level_points" ]]; then
             best_gain_level_points="$gain_level_points"
             best_gain_level_value="$gain_level_value"
-            logger_verbose "Gain level: $gain_level_value has $gain_level_points points."
         fi
     done < "$AUTOGAIN_RESULTS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
 
     echo "$best_gain_level_value"
+
+    logger_debug "Exiting: rank_gain_levels"
+}
+
+function adjust_minimum_gain_if_required() {
+
+    # Check to see whether we need to adjust minimum gain level
+    # -----
+    logger_debug "Entering: adjust_minimum_gain_if_required"
+
+    check_state="finding_pct_strong_msgs_between_min_max"
+    count_below_min=0
+    # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...
+    while read -r line; do
+        # Get gain level and percentage of strong messages
+        gain_level=$(echo "$line" | cut -d ' ' -f 1)
+        pct_strong_msgs=$(echo "$line" | cut -d ' ' -f 2)
+        # Depending on state, either find the "good" region, and then find where we're below it.
+        case "$check_state" in
+            finding_pct_strong_msgs_between_min_max)
+                # Look for gain levels that have a suitable percentage of strong messages
+                bc_expression="$pct_strong_msgs <= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX)"
+                if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+                    bc_expression="$pct_strong_msgs >= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN)"
+                    if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+                        check_state="look_for_consecutive_below_min"
+                    fi
+                fi
+                ;;
+            look_for_consecutive_below_min)
+                # Look for gain levels that have a percentage of strong messages below the minimum
+                # This would indicate we've gone past the "good" region
+                bc_expression="($pct_strong_msgs < $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
+                if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+                    count_below_min=$((count_below_min + 1))
+                fi
+                ;;
+        esac                            
+    done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
+    # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
+    # Bring up the minimum gain
+    if [[ "$count_below_min" -gt "2" ]]; then
+        logger_verbose "Bringing up minimum gain level to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
+        cp "$AUTOGAIN_CURRENT_VALUE_FILE" "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+    fi
+    logger_debug "Exiting: adjust_minimum_gain_if_required"
+}
+
+function is_current_gain_min_gain() {
+    logger_debug "Entering: is_current_gain_min_gain"
+    bc_expression="$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") <= $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
+    if [[ "$(echo "$bc_expression" | bc -l)" -eq "1" ]]; then
+        logger_debug "Current gain is minimum gain"
+    else
+        logger_debug "Current gain is not minimum gain"
+        return 1
+    fi
+    logger_debug "Exiting: is_current_gain_min_gain"
 }
 
 ##### MAIN SCRIPT #####
@@ -415,7 +532,9 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
     if [[ ! -e "$AUTOGAIN_STATE_FILE" ]]; then
 
         # If there's no state, then initialise with the first state (2 hours)
-        autogain_initialize init "$AUTOGAIN_INITIAL_PERIOD"
+        echo "$AUTOGAIN_MAX_GAIN_VALUE" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+        echo "$AUTOGAIN_MIN_GAIN_VALUE" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        autogain_change_into_state init "$AUTOGAIN_INITIAL_PERIOD"
 
     elif [[ ! -e "$AUTOGAIN_RUNNING_FILE" ]]; then
 
@@ -427,7 +546,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
         touch "$AUTOGAIN_RUNNING_FILE"
         
         if [[ ! "$(cat "$AUTOGAIN_STATE_FILE")" == "finished" ]]; then
-            echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+            increase_review_timestamp
         fi
 
     else
@@ -436,73 +555,80 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
         case "$(cat "$AUTOGAIN_STATE_FILE")" in
             init)
 
+                logger_debug "In init state"
+
                 # if it's time to review the current gain setting...
-                if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
+                if review_is_due; then
 
                     # If stats we require aren't yet available, extend runtime.
                     if ! are_required_stats_available; then
                         logger "Insufficient data available, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
                         # Set review time 
-                        echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+                        increase_review_timestamp
                     
                     # If stats we require are available, then process.
                     else
 
                         # Make sure we've received at least 500000 accepted messages:
-                        if [[ ! "$(get_readsb_stat total local_accepted)" -ge "$AUTOGAIN_INITIAL_MSGS_ACCEPTED" ]]; then
+                        if ! sufficient_local_accepted "$AUTOGAIN_INITIAL_MSGS_ACCEPTED"; then
                             logger "Insufficient messages received for accurate measurement, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
+                            
                             # Set review time 
-                            echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+                            increase_review_timestamp
 
-                            # TODO - limit number of retries...
+                            # Limit number of retries to 24 hours
+                            if [[ "$(date +%s)" -gt "$(($(cat "$AUTOGAIN_CURRENT_TIMESTAMP_FILE") + 86400))" ]]; then
+
+                                # Set review time 
+                                increase_review_timestamp
+
+                                # Gather statistics for the current gain level
+                                gather_statistics
+
+                                # Check to see if we should adjust the minimum gain
+                                adjust_minimum_gain_if_required
+
+                                # If current gain is at the minimum gain, then we're done with this stage
+                                if is_current_gain_min_gain; then
+
+                                    # Determine the best gain
+                                    best_gain=$(rank_gain_levels)
+
+                                    # Inform user
+                                    logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+
+                                    # Try values sandwiching the best gain
+                                    best_gain_number=$(get_gain_number "$best_gain")
+                                    upper_gain_number=$((best_gain_number + 2))
+                                    lower_gain_number=$((best_gain_number - 2))
+                                    if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
+                                        upper_gain_number=$((${#gain_levels[@]}-1))
+                                    fi
+                                    if [[ $lower_gain_number -lt 0 ]]; then
+                                        lower_gain_number=0
+                                    fi
+                                    echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+                                    echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+
+                                    # Initialise next stage
+                                    autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
+
+                                fi
+                            fi
                         
                         else
 
                             # Set review time 
-                            echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+                            increase_review_timestamp
 
                             # Gather statistics for the current gain level
                             gather_statistics
 
                             # Check to see if we should adjust the minimum gain
-                            check_state="finding_pct_strong_msgs_between_min_max"
-                            count_below_min=0
-                            # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...
-                            while read -r line; do
-                                # Get gain level and percentage of strong messages
-                                gain_level=$(echo "$line" | cut -d ' ' -f 1)
-                                pct_strong_msgs=$(echo "$line" | cut -d ' ' -f 2)
-                                # Depending on state, either find the "good" region, and then find where we're below it.
-                                case "$check_state" in
-                                    finding_pct_strong_msgs_between_min_max)
-                                        # Look for gain levels that have a suitable percentage of strong messages
-                                        bc_expression="($pct_strong_msgs <= $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE")"
-                                        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                            bc_expression="($pct_strong_msgs >= $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
-                                            if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                                check_state="look_for_consecutive_below_min"
-                                            fi
-                                        fi
-                                        ;;
-                                    look_for_consecutive_below_min)
-                                        # Look for gain levels that have a percentage of strong messages below the minimum
-                                        # This would indicate we've gone past the "good" region
-                                        bc_expression="($pct_strong_msgs < $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
-                                        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                            count_below_min=$((count_below_min + 1))
-                                        fi
-                                        ;;
-                                esac                            
-                            done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
-                            # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
-                            # Bring up the minimum gain
-                            if [[ "$count_below_min" -gt "2" ]]; then
-                                logger_verbose "Bringing up minimum gain level to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
-                                cp "$AUTOGAIN_CURRENT_VALUE_FILE" "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-                            fi
+                            adjust_minimum_gain_if_required
 
                             # If current gain is at the minimum gain, then we're done with this stage
-                            if [[ "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE")" == "$(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")" ]]; then
+                            if is_current_gain_min_gain; then
 
                                 # Determine the best gain
                                 best_gain=$(rank_gain_levels)
@@ -510,80 +636,26 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 # Inform user
                                 logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
 
-                                # Next step depends on state...
-                                case "$(cat "$AUTOGAIN_STATE_FILE")" in
-                                    init)
+                                # Try values sandwiching the best gain
+                                best_gain_number=$(get_gain_number "$best_gain")
+                                upper_gain_number=$((best_gain_number + 2))
+                                lower_gain_number=$((best_gain_number - 2))
+                                if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
+                                    upper_gain_number=$((${#gain_levels[@]}-1))
+                                fi
+                                if [[ $lower_gain_number -lt 0 ]]; then
+                                    lower_gain_number=0
+                                fi
+                                echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+                                echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
 
-                                        # Try values sandwiching the best gain
-                                        best_gain_number=$(get_gain_number "$best_gain")
-                                        upper_gain_number=$((best_gain_number + 2))
-                                        lower_gain_number=$((best_gain_number - 2))
-                                        if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
-                                            upper_gain_number=$((${#gain_levels[@]}-1))
-                                        fi
-                                        if [[ $lower_gain_number -lt 0 ]]; then
-                                            lower_gain_number=0
-                                        fi
-                                        echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-                                        echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-
-                                        # Initialise next stage
-                                        autogain_initialize finetune "$AUTOGAIN_FINETUNE_PERIOD"
-                                        ;;
-                                        
-                                    finetune)
-
-                                        # Switch to best gain
-                                        set_readsb_gain "$best_gain"
-                                        
-                                        # Initialise next stage
-                                        autogain_initialize finished "$AUTOGAIN_FINISHED_PERIOD"
-                                        ;;
-
-                                esac
-
-                                # TODO set while testing
-                                echo "finish" > "$AUTOGAIN_STATE_FILE"
+                                # Initialise next stage
+                                autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
                             
                             # otherwise, reduce gain
                             else
                                 reduce_gain
 
-                            fi
-                        fi
-                    fi
-
-                # elif it's been over an hour, check our % strong signals
-                elif [[ "$(date +%s)" -ge "$(($(cat "$AUTOGAIN_CURRENT_TIMESTAMP_FILE") + 3600))" ]]; then
-
-                    # only do this during init state
-                    if [[ "$(cat "$AUTOGAIN_STATE_FILE")" == "init" ]]; then
-
-                        # Only proceed if stats we require are available.
-                        if are_required_stats_available; then
-
-                            # make sure we're not already at minimum gain
-                            if [[ ! "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE")" == "$(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")" ]]; then
-
-                                # prepare bc expression to simplify if statement below
-                                bc_expression="$(get_pct_strong_signals) > $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX"
-
-                                # if over our max, immediately decrease gain level
-                                if [[ "$(echo "$bc_expression" | bc -l)" -eq "1" ]]; then
-                                    
-                                    # inform user
-                                    logger "Percentage of strong signals is $(get_pct_strong_signals)%, which is above the max of $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX%. Lowering gain."
-
-                                    # Set review time 
-                                    echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
-
-                                    # Gather statistics for the current gain level
-                                    gather_statistics
-
-                                    # Reduce gain
-                                    reduce_gain
-
-                                fi
                             fi
                         fi
                     fi
@@ -597,73 +669,71 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
             finetune)
 
+                logger_debug "In finetune state"
+
                 # if it's time to review the current gain setting...
-                if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
+                if review_is_due; then
 
                     # If stats we require aren't yet available, extend runtime.
                     if ! are_required_stats_available; then
                         logger "Insufficient data available, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
                         # Set review time 
-                        echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
-                    
+                        increase_review_timestamp
+
                     # If stats we require are available, then process.
                     else
 
                         # Make sure we've received at least 500000 accepted messages:
-                        if [[ ! "$(get_readsb_stat total local_accepted)" -ge "$AUTOGAIN_INITIAL_MSGS_ACCEPTED" ]]; then
+                        if ! sufficient_local_accepted "$AUTOGAIN_FINETUNE_MSGS_ACCEPTED"; then
                             logger "Insufficient messages received for accurate measurement, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
+                            
                             # Set review time 
-                            echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+                            increase_review_timestamp
 
-                            # TODO - limit number of retries...
-                        
+                            # Limit number of retries to 24 hours
+                            if [[ "$(date +%s)" -gt "$((AUTOGAIN_CURRENT_TIMESTAMP_FILE + 172800))" ]]; then
+
+                                # Set review time 
+                                increase_review_timestamp
+
+                                # Gather statistics for the current gain level
+                                gather_statistics
+
+                                # Check to see if we should adjust the minimum gain
+                                adjust_minimum_gain_if_required
+
+                                # If current gain is at the minimum gain, then we're done with this stage
+                                if is_current_gain_min_gain; then
+
+                                    # Determine the best gain
+                                    best_gain=$(rank_gain_levels)
+
+                                    # Inform user
+                                    logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+
+                                    # Switch to best gain
+                                    set_readsb_gain "$best_gain"
+                                    
+                                    # Initialise next stage
+                                    autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
+
+                                    # TODO set while testing
+                                    echo "finish" > "$AUTOGAIN_STATE_FILE"
+                                fi
+                            fi
                         else
                                                 
                             # Set review time 
-                            echo $(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE"))) > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
+                            increase_review_timestamp
 
                             # Gather statistics for the current gain level
                             gather_statistics
 
                             # Check to see if we should adjust the minimum gain
-                            check_state="finding_pct_strong_msgs_between_min_max"
-                            count_below_min=0
-                            # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...
-                            while read -r line; do
-                                # Get gain level and percentage of strong messages
-                                gain_level=$(echo "$line" | cut -d ' ' -f 1)
-                                pct_strong_msgs=$(echo "$line" | cut -d ' ' -f 2)
-                                # Depending on state, either find the "good" region, and then find where we're below it.
-                                case "$check_state" in
-                                    finding_pct_strong_msgs_between_min_max)
-                                        # Look for gain levels that have a suitable percentage of strong messages
-                                        bc_expression="($pct_strong_msgs <= $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE")"
-                                        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                            bc_expression="($pct_strong_msgs >= $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
-                                            if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                                check_state="look_for_consecutive_below_min"
-                                            fi
-                                        fi
-                                        ;;
-                                    look_for_consecutive_below_min)
-                                        # Look for gain levels that have a percentage of strong messages below the minimum
-                                        # This would indicate we've gone past the "good" region
-                                        bc_expression="($pct_strong_msgs < $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
-                                        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                                            count_below_min=$((count_below_min + 1))
-                                        fi
-                                        ;;
-                                esac                            
-                            done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
-                            # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
-                            # Bring up the minimum gain
-                            if [[ "$count_below_min" -gt "2" ]]; then
-                                logger_verbose "Bringing up minimum gain level to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
-                                cp "$AUTOGAIN_CURRENT_VALUE_FILE" "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-                            fi
+                            adjust_minimum_gain_if_required
 
                             # If current gain is at the minimum gain, then we're done with this stage
-                            if [[ "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE")" == "$(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")" ]]; then
+                            if is_current_gain_min_gain; then
 
                                 # Determine the best gain
                                 best_gain=$(rank_gain_levels)
@@ -675,7 +745,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 set_readsb_gain "$best_gain"
                                 
                                 # Initialise next stage
-                                autogain_initialize finished "$AUTOGAIN_FINISHED_PERIOD"
+                                autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
 
                                 # TODO set while testing
                                 echo "finish" > "$AUTOGAIN_STATE_FILE"
@@ -697,10 +767,12 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
             finished)
 
+                logger_debug "In finished state"
+
                 # Steady state (basically do nothing for a year)
 
                 # if it's time to review the current gain setting...
-                if [[ "$(date +%s)" -ge "$(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE")" ]]; then
+                if review_is_due; then
                     # re-run autogain process
                     rm "$AUTOGAIN_STATE_FILE"
                 fi

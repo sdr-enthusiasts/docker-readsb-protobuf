@@ -434,13 +434,16 @@ These variables control the auto-gain system (explained further below). These sh
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `AUTOGAIN_INITIAL_PERIOD` | How long each gain level should be measured during auto-gain initialisation (ie: "roughing in"), in seconds. | `7200` (2 hours) |
+| `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain initialisaion to ensure accurate measurement. | `500000` |
 | `AUTOGAIN_FINETUNE_PERIOD` | How long each gain level should be measured during auto-gain fine-tuning, in seconds. | `86400` (24 hours) |
+| `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain fine-tuning to ensure accurate measurement. | `1000000` |
 | `AUTOGAIN_FINISHED_PERIOD` | How long between the completion of fine-tuning (and ultimetly setting a preferred gain), and re-running the entire process. | `31536000` (1 year) |
 | `AUTOGAIN_MAX_GAIN_VALUE` | The maximum gain setting in dB that will be used by auto-gain. | `49.6` (max supported by `readsb`) |
 | `AUTOGAIN_MIN_GAIN_VALUE` | The minimum gain setting in dB that will be used by auto-gain. | `0.0` (min supported by `readsb`) |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` | The maximum percentage of "strong messages" auto-gain will aim for. | `5.0` |
 | `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` | The minimum percentage of "strong messages" auto-gain will aim for. | `1.0` |
 | `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | The minimum number of successfully accepted messages per gain level measured. | `500000` |
+| `AUTOGAIN_SERVICE_PERIOD` | How often the auto-gain system will check results and perform actions, in seconds | `900` |
 
 ## Ports
 
@@ -480,9 +483,8 @@ The auto-gain system will work as follows:
 In the initialisation process:
 
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
-1. After one hour, auto-gain will check the percentage of strong messages.
-  * If greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, no more results are collected for this gain level.
-  * If not greater than `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
+1. Results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
+1. Check to ensure at least `AUTOGAIN_INITIAL_MSGS_ACCEPTED` messages have been locally accepted (500,000 by default). If not, contine collecting data in periods of `AUTOGAIN_INITIAL_PERIOD` for up to 24 hours.
 1. Gain level is lowered by one level.
 1. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
@@ -506,6 +508,7 @@ In the fine-tuning process:
 
 1. `readsb` is set to maximum gain level chosen at the end of the initialisation process.
 1. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (24 hours by default).
+1. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (1,000,000 by default). If not, contine collecting data in periods of `AUTOGAIN_FINETUNE_PERIOD` for up to 48 hours.
 1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
 
 At this point, all of the tested gain levels are ranked, using the following methodology:
