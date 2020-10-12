@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+set -eo pipefail
+
+if [[ -n "$INFLUXDBURL" ]]; then
+
+  telegraf \
+    --config /etc/telegraf/telegraf.conf \
+    --config-directory /etc/telegraf/telegraf.d \
+    2>&1 | stdbuf -o0 awk '{print "[telegraf] " $0}'
+
+else
+  sleep 86400
+fi

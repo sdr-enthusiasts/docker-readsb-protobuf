@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bash
 #shellcheck shell=bash
 
+# When telegraf supports protobuf input, change to this.
+# https://github.com/influxdata/telegraf/pull/3421
+
 if [[ -n "$VERBOSE_LOGGING" ]]; then
     set -x
 fi
@@ -78,6 +81,19 @@ if [[ -n "$READSB_NET_ENABLE" ]]; then
         done
     fi
 fi
+# If InfluxDB 
+if [[ -n "$INFLUXDBURL" ]]; then
+    INFLUXDB_HOST=$(echo $INFLUXDBURL | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\1;p')
+    INFLUXDB_PORT=$(echo $INFLUXDBURL | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\2;p')
+    INFLUXDB_IP=$(get_ip "$INFLUXDB_HOST")
+    # Is the connection established?
+    if is_tcp_connection_established "$INFLUXDB_IP" "$INFLUXDB_PORT"; then
+        echo "InfluxDB connection to $INFLUXDB_IP:$INFLUXDB_PORT established OK: HEALTHY"
+    else
+        echo "InfluxDB connection to $INFLUXDB_IP:$INFLUXDB_PORT not established: UNHEALTHY"
+        exit 1
+    fi
+fi
 
 ##### SDR #####
 # If using --device-type=*, ensure local messages are being received/accepted.
@@ -113,7 +129,8 @@ if [[ -n "$READSB_DEVICE_TYPE" ]]; then
 fi
 
 ##### Service Death Counts #####
-services=('autogain' 'collectd' 'graphs_1h-24h' 'graphs_7d-1y' 'lighttpd' 'readsb' 'readsbrrd')
+services=('autogain' 'collectd' 'graphs_1h-24h' 'graphs_7d-1y' 'lighttpd')
+services+=('readsb' 'readsbrrd' 'telegraf_socat_vrs_json' 'telegraf')
 # For each service...
 for service in "${services[@]}"; do
     # Get number of non-zero service exits

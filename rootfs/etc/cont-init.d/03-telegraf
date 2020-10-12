@@ -1,0 +1,151 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+if [[ -n "$INFLUXDBURL" ]]; then
+
+  # Initialise config files, and remove existing
+  OUTPUT_INFLUXDB_CONFIG_FILE="/etc/telegraf/telegraf.d/outputs_influxdb.conf"
+  rm "$OUTPUT_INFLUXDB_CONFIG_FILE" > /dev/null 2>&1 || true
+  INPUT_JSON_CONFIG_FILE="/etc/telegraf/telegraf.d/inputs_socket_listener_readsb_json.conf"
+  rm "$INPUT_JSON_CONFIG_FILE" > /dev/null 2>&1 || true
+  INPUT_AUTOGAIN_FILE="/etc/telegraf/telegraf.d/inputs_file_autogain.conf"
+  rm "$INPUT_AUTOGAIN_FILE" > /dev/null 2>&1 || true
+  INPUT_READSB_PROTOC_DATA="/etc/telegraf/telegraf.d/inputs_readsb_protoc.conf"
+  rm "$INPUT_READSB_PROTOC_DATA" > /dev/null 2>&1 || true
+
+
+  ##### TELEGRAF CONFIG - OUTPUT TO INFLUXDB #####
+  {
+    echo "[[outputs.influxdb]]"
+
+    # Add InfluxDB URL
+    echo " urls = [\"${INFLUXDBURL}\"]"
+
+    # Finish config
+    echo 'database = "readsb"'
+    echo 'skip_database_creation = false'
+    echo 'timeout = "5s"'
+
+    # If set, add InfluxDB username
+    if [[ -n "${INFLUXDBUSERNAME+x}" ]]; then
+      echo "username = \"${INFLUXDBUSERNAME}\""
+    fi
+
+    # If set, add InfluxDB password
+    if [[ -n "${INFLUXDBPASSWORD+x}" ]]; then
+      echo "password = \"${INFLUXDBPASSWORD}\""
+    fi
+
+  } > "$OUTPUT_INFLUXDB_CONFIG_FILE"
+
+
+  # If gain is specified...
+  if [[ -n "$READSB_GAIN" ]]; then
+    # If the user wants to use the autogain system...
+    if [[ "$READSB_GAIN" == "autogain" ]]; then
+      ##### TELEGRAF CONFIG - INPUT FROM autogain FILES #####
+      {
+        echo "[[inputs.exec]]"
+        echo "commands = ["
+        echo "  \"bash /scripts/telegraf_input_autogain.sh\","
+        echo "]"
+        echo "interval = \"60s\""
+        echo "name_override = \"autogain\""
+        echo "data_format = \"influx\""
+      } > "$INPUT_AUTOGAIN_FILE"
+
+    fi
+  fi
+
+
+  ##### TELEGRAF CONFIG - INPUT FROM protoc OUTPUT #####
+  {
+    echo "[[inputs.exec]]"
+    echo "commands = ["
+    echo "  \"bash /scripts/telegraf_input_readsb_protoc.sh\","
+    echo "]"
+    echo "interval = \"60s\""
+    echo "name_override = \"readsb\""
+    echo "data_format = \"influx\""
+  } > "$INPUT_READSB_PROTOC_DATA"
+
+
+  ##### TELEGRAF CONFIG - INPUT FROM readsb VRS JSON #####
+  # Build telegraf config - input from readsb VRS JSON
+  {
+    echo "[[inputs.socket_listener]]"
+
+    # Run every fairly often as VRS JSON comes out fast
+    echo "interval = \"1s\""
+    
+    ## URL to listen on
+    echo "service_address = \"tcp://127.0.0.1:33334\""
+
+    ## Maximum number of concurrent connections.
+    ## Only applies to stream sockets (e.g. TCP).
+    ## 0 (default) is unlimited.
+    echo "max_connections = 2"
+
+    ## Read timeout.
+    ## Only applies to stream sockets (e.g. TCP).
+    ## 0 (default) is unlimited.
+    echo "read_timeout = \"0\""
+
+    ## Period between keep alive probes.
+    ## Only applies to TCP sockets.
+    ## 0 disables keep alive probes.
+    ## Defaults to the OS configuration.
+    echo "keep_alive_period = \"1m\""
+
+    ## Content encoding for message payloads, can be set to "gzip" to or
+    ## "identity" to apply no encoding.
+    echo "content_encoding = \"identity\""
+
+    ## Data format to consume.
+    ## Each data format has its own unique set of configuration options, read
+    ## more about them here:
+    ## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
+    echo "data_format = \"json\""
+
+    ## Query is a GJSON path that specifies a specific chunk of JSON to be
+    ## parsed, if not specified the whole document will be parsed.
+    ##
+    ## GJSON query paths are described here:
+    ##   https://github.com/tidwall/gjson#path-syntax
+    echo "json_query = \"acList\""
+
+    ## Tag keys is an array of keys that should be added as tags.
+    echo "tag_keys = ["
+    echo "  \"Icao\","
+    echo "  \"Call\","
+    echo "  \"Mlat\","
+    echo "  \"Tisb\","
+    echo "  \"SpdTyp\","
+    echo "  \"TrkH\","
+    echo "  \"Sqk\","
+    echo "  \"Gnd\","
+    echo "  \"VsiT\","
+    echo "]"
+
+    ## String fields is an array of keys that should be added as string fields.
+    echo "json_string_fields = ["
+    echo "  \"Icao\","
+    echo "  \"Call\","
+    echo "  \"Sqk\","
+    echo "]"
+
+    ## Name override
+    echo "name_override = \"aircraft\""
+
+    ## Time key is the key containing the time that should be used to create the
+    ## metric.
+    #echo "json_time_key = \"PosTime\""
+
+    ## Time format is the time layout that should be used to interprete the
+    ## json_time_key.  The time must be `unix`, `unix_ms` or a time in the
+    ## "reference time".
+    #echo "json_time_format =\"unix_ms\""
+
+  } > "$INPUT_JSON_CONFIG_FILE"
+
+fi

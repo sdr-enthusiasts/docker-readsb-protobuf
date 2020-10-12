@@ -11,7 +11,7 @@ if [[ -n "$READSB_GAIN" ]]; then
 
         # Run autogain
         #shellcheck disable=SC2016
-        bash /autogain.sh 2>&1 | stdbuf -o0 awk '{print "[autogain] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+        bash /scripts/autogain.sh 2>&1 | stdbuf -o0 awk '{print "[autogain] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
 
         # Sleep for 15 mins
         sleep "$AUTOGAIN_SERVICE_PERIOD"

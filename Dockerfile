@@ -47,6 +47,10 @@ ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
     AUTOGAIN_MIN_GAIN_VALUE=0.0 \
     # State file that will disappear when the container is rebuilt/restarted - so autogain can detect container restart/rebuild
     AUTOGAIN_RUNNING_FILE="/tmp/.autogain_running" \
+    # maximum accepted gain value
+    AUTOGAIN_MAX_GAIN_VALUE_FILE="/run/autogain/autogain_max_value" \
+    # minimum accepted gain value
+    AUTOGAIN_MIN_GAIN_VALUE_FILE="/run/autogain/autogain_min_value" \
     ###########################################################################
     # Protobuf data from readsb
     READSB_STATS_PB_FILE="/run/readsb/stats.pb" \
@@ -105,6 +109,9 @@ RUN set -x && \
     KEPT_PACKAGES+=(lighttpd) && \
     KEPT_PACKAGES+=(collectd) && \
     KEPT_PACKAGES+=(rrdtool) && \
+    # Packages for telegraf
+    TEMP_PACKAGES+=(apt-transport-https) && \
+    KEPT_PACKAGES+=(socat) && \
     # Packages for s6-overlay deployment.
     TEMP_PACKAGES+=(file) && \
     TEMP_PACKAGES+=(gnupg) && \
@@ -239,6 +246,12 @@ RUN set -x && \
     # set up auto-gain file structure
     mkdir -p "/run/autogain" && \
     chown readsb "/run/autogain" && \
+    # Install telegraf
+    curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
+    source /etc/os-release && \ 
+    echo "deb https://repos.influxdata.com/debian $(echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/influxdb.list && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y telegraf && \
     # Deploy s6-overlay.
     curl -s https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh && \
     # Clean-up.
@@ -256,7 +269,7 @@ COPY rootfs/ /
 ENTRYPOINT [ "/init" ]
 
 # Add healthcheck
-HEALTHCHECK --start-period=300s --interval=300s CMD /healthcheck.sh
+HEALTHCHECK --start-period=300s --interval=300s CMD /scripts/healthcheck.sh
 
 # This container can't be rootless - readsb can't talk to RTLSDR if USER is set :-(
 #USER 1000:1000

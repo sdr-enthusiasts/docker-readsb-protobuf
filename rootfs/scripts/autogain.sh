@@ -49,10 +49,6 @@ AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE="/run/autogain/autogain_stats.pct_strong
 AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE="/run/autogain/autogain_stats.total_accepted_msgs"
 # best SNR (local_signal - local_noise)
 AUTOGAIN_STATS_SNR_FILE="/run/autogain/autogain_stats.snr"
-# maximum accepted gain value
-AUTOGAIN_MAX_GAIN_VALUE_FILE="/run/autogain/autogain_max_value"
-# minimum accepted gain value
-AUTOGAIN_MIN_GAIN_VALUE_FILE="/run/autogain/autogain_min_value"
 # update interval
 AUTOGAIN_INTERVAL_FILE="/run/autogain/autogain_interval"
 # results for init stage
