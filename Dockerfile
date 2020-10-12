@@ -248,7 +248,6 @@ RUN set -x && \
     chown readsb "/run/autogain" && \
     # Install telegraf
     curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
-    #shellcheck disable=SC1091
     source /etc/os-release && \ 
     echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
