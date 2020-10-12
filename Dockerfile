@@ -61,7 +61,6 @@ ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# shellcheck disable=SC1091
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
@@ -167,14 +166,14 @@ RUN set -x && \
     # Download bladeRF FPGA Images.
     BLADERF_RBF_PATH="/usr/share/Nuand/bladeRF" && \
     mkdir -p "$BLADERF_RBF_PATH" && \
-    curl -o $BLADERF_RBF_PATH/hostedxA4.rbf https://www.nuand.com/fpga/hostedxA4-latest.rbf && \
-    curl -o $BLADERF_RBF_PATH/hostedxA9.rbf https://www.nuand.com/fpga/hostedxA9-latest.rbf && \
-    curl -o $BLADERF_RBF_PATH/hostedx40.rbf https://www.nuand.com/fpga/hostedx40-latest.rbf && \
-    curl -o $BLADERF_RBF_PATH/hostedx115.rbf https://www.nuand.com/fpga/hostedx115-latest.rbf && \
-    curl -o $BLADERF_RBF_PATH/adsbxA4.rbf https://www.nuand.com/fpga/adsbxA4.rbf && \
-    curl -o $BLADERF_RBF_PATH/adsbxA9.rbf https://www.nuand.com/fpga/adsbxA9.rbf && \
-    curl -o $BLADERF_RBF_PATH/adsbx40.rbf https://www.nuand.com/fpga/adsbx40.rbf && \
-    curl -o $BLADERF_RBF_PATH/adsbx115.rbf https://www.nuand.com/fpga/adsbx115.rbf && \
+    curl -o "$BLADERF_RBF_PATH/hostedxA4.rbf" https://www.nuand.com/fpga/hostedxA4-latest.rbf && \
+    curl -o "$BLADERF_RBF_PATH/hostedxA9.rbf" https://www.nuand.com/fpga/hostedxA9-latest.rbf && \
+    curl -o "$BLADERF_RBF_PATH/hostedx40.rbf" https://www.nuand.com/fpga/hostedx40-latest.rbf && \
+    curl -o "$BLADERF_RBF_PATH/hostedx115.rbf" https://www.nuand.com/fpga/hostedx115-latest.rbf && \
+    curl -o "$BLADERF_RBF_PATH/adsbxA4.rbf" https://www.nuand.com/fpga/adsbxA4.rbf && \
+    curl -o "$BLADERF_RBF_PATH/adsbxA9.rbf" https://www.nuand.com/fpga/adsbxA9.rbf && \
+    curl -o "$BLADERF_RBF_PATH/adsbx40.rbf" https://www.nuand.com/fpga/adsbx40.rbf && \
+    curl -o "$BLADERF_RBF_PATH/adsbx115.rbf" https://www.nuand.com/fpga/adsbx115.rbf && \
     # Build readsb.
     git clone https://github.com/Mictronics/readsb-protobuf.git /src/readsb-protobuf && \
     pushd /src/readsb-protobuf && \
@@ -249,8 +248,9 @@ RUN set -x && \
     chown readsb "/run/autogain" && \
     # Install telegraf
     curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
+    #shellcheck disable=SC1091
     source /etc/os-release && \ 
-    echo "deb https://repos.influxdata.com/debian "$VERSION_CODENAME" stable" > /etc/apt/sources.list.d/influxdb.list && \
+    echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y telegraf && \
     # Deploy s6-overlay.
