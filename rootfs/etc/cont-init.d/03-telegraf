@@ -3,6 +3,7 @@
 
 if [[ -n "$INFLUXDBURL" ]]; then
 
+
   # Initialise config files, and remove existing
   OUTPUT_INFLUXDB_CONFIG_FILE="/etc/telegraf/telegraf.d/outputs_influxdb.conf"
   rm "$OUTPUT_INFLUXDB_CONFIG_FILE" > /dev/null 2>&1 || true
@@ -12,6 +13,8 @@ if [[ -n "$INFLUXDBURL" ]]; then
   rm "$INPUT_AUTOGAIN_FILE" > /dev/null 2>&1 || true
   INPUT_READSB_PROTOC_DATA="/etc/telegraf/telegraf.d/inputs_readsb_protoc.conf"
   rm "$INPUT_READSB_PROTOC_DATA" > /dev/null 2>&1 || true
+  INPUT_READSB_PROTOC_RANGE_DATA="/etc/telegraf/telegraf.d/inputs_readsb_protoc_range.conf"
+  rm "$INPUT_READSB_PROTOC_RANGE_DATA" > /dev/null 2>&1 || true
 
 
   ##### TELEGRAF CONFIG - OUTPUT TO INFLUXDB #####
@@ -68,6 +71,18 @@ if [[ -n "$INFLUXDBURL" ]]; then
     echo "name_override = \"readsb\""
     echo "data_format = \"influx\""
   } > "$INPUT_READSB_PROTOC_DATA"
+
+
+  ##### TELEGRAF CONFIG - INPUT FROM protoc polar_range OUTPUT #####
+  {
+    echo "[[inputs.exec]]"
+    echo "commands = ["
+    echo "  \"bash /scripts/telegraf_input_readsb_protoc_range.sh\","
+    echo "]"
+    echo "interval = \"60s\""
+    echo "name_override = \"polar_range\""
+    echo "data_format = \"influx\""
+  } > "$INPUT_READSB_PROTOC_RANGE_DATA"
 
 
   ##### TELEGRAF CONFIG - INPUT FROM readsb VRS JSON #####
