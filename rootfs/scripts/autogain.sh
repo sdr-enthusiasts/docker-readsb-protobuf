@@ -466,8 +466,6 @@ function adjust_minimum_gain_if_required() {
     logger_debug "Entering: adjust_minimum_gain_if_required"
 
     # Prepare local variables
-    local check_state
-    check_state="finding_pct_strong_msgs_between_min_max"
     local count_below_min
     count_below_min=0
     # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...

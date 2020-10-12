@@ -83,8 +83,8 @@ if [[ -n "$READSB_NET_ENABLE" ]]; then
 fi
 # If InfluxDB 
 if [[ -n "$INFLUXDBURL" ]]; then
-    INFLUXDB_HOST=$(echo $INFLUXDBURL | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\1;p')
-    INFLUXDB_PORT=$(echo $INFLUXDBURL | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\2;p')
+    INFLUXDB_HOST=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\1;p')
+    INFLUXDB_PORT=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\2;p')
     INFLUXDB_IP=$(get_ip "$INFLUXDB_HOST")
     # Is the connection established?
     if is_tcp_connection_established "$INFLUXDB_IP" "$INFLUXDB_PORT"; then
@@ -118,7 +118,7 @@ if [[ -n "$READSB_DEVICE_TYPE" ]]; then
             # Return the value only
             cut -d ':' -f 2)
         # Log healthy/unhealthy and exit abnormally if unhealthy
-        if [[ $(echo "$(echo $returnvalue) > 0" | bc -l) -eq 1 ]]; then
+        if [[ $(echo "$returnvalue > 0" | bc -l) -eq 1 ]]; then
             echo "last_15min:local_accepted is $returnvalue: HEALTHY"
         else
             echo "last_15min:local_accepted is 0: UNHEALTHY"
@@ -136,8 +136,7 @@ for service in "${services[@]}"; do
     # Get number of non-zero service exits
     returnvalue=$(s6-svdt \
                     -s "/run/s6/services/$service" | \
-                    grep -v 'exitcode 0' | \
-                    wc -l)
+                    grep -cv 'exitcode 0')
     # Reset service death counts
     s6-svdt-clear "/run/s6/services/$service"
     # Log healthy/unhealthy and exit abnormally if unhealthy

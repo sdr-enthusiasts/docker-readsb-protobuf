@@ -6,12 +6,11 @@
 protoc --proto_path="$READSB_PROTO_PATH" --decode Statistics readsb.proto < "$READSB_STATS_PB_FILE" > /tmp/.protoc_readsb_out
 
 # Turn stats we care about (last_1min) into array
-stats_from_protoc=($(cat /tmp/.protoc_readsb_out | \
-                    grep -m 1 -A 999 'last_1min' | \
-                    grep -m 1 -B 999 '}' | \
-                    grep -v '{' | \
-                    grep -v '}' | \
-                    tr -d " "))
+stats_from_protoc=($(grep -m 1 -A 999 'last_1min' /tmp/.protoc_readsb_out | \
+                     grep -m 1 -B 999 '}' | \
+                     grep -v '{' | \
+                     grep -v '}' | \
+                     tr -d " "))
 
 # For each item in array
 field_set=()

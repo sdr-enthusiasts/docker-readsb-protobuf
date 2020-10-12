@@ -5,6 +5,7 @@ set -eo pipefail
 
 if [[ -n "$INFLUXDBURL" ]]; then
 
+  #shellcheck disable=SC2016
   telegraf \
     --config /etc/telegraf/telegraf.conf \
     --config-directory /etc/telegraf/telegraf.d \
