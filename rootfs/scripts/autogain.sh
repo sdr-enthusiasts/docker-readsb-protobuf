@@ -705,6 +705,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                     set_readsb_gain "$best_gain"
                                     
                                     # Initialise next stage
+                                    echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+                                    echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
                                     autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
 
                                     # TODO set while testing
@@ -735,6 +737,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 set_readsb_gain "$best_gain"
                                 
                                 # Initialise next stage
+                                echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+                                echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
                                 autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
 
                                 # TODO set while testing
