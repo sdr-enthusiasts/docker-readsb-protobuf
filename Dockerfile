@@ -2,7 +2,11 @@ FROM debian:stable-slim
 
 ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
+    ###########################################################################
+    ##### READSBRRD ENVIRONMENT VARS #####
     READSBRRD_STEP=60 \
+    ###########################################################################
+    ##### READSB GRAPH ENVIRONMENT VARS #####
     READSB_GRAPH_SIZE="default" \
     READSB_GRAPH_ALL_LARGE="no" \
     READSB_GRAPH_FONT_SIZE=10.0 \
@@ -11,22 +15,45 @@ ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
     READSB_GRAPH_LARGE_HEIGHT=235 \
     READSB_GRAPH_SMALL_WIDTH=619 \
     READSB_GRAPH_SMALL_HEIGHT=324 \
+    ###########################################################################
+    ##### AUTOGAIN ENVIRONMENT VARS #####
+    # How often the autogain.sh is run (in seconds)
     AUTOGAIN_SERVICE_PERIOD=900 \
+    # The autogain state file (init/finetune/finish)
     AUTOGAIN_STATE_FILE="/run/autogain/state" \
+    # The current gain figure as-set by autogain
     AUTOGAIN_CURRENT_VALUE_FILE="/run/autogain/autogain_current_value" \
+    # The timestamp (seconds since epoch) when the current gain figure was set
     AUTOGAIN_CURRENT_TIMESTAMP_FILE="/run/autogain/autogain_current_timestamp" \
+    # The timestamp (seconds since epoch) when the current gain figure should be reviewed
     AUTOGAIN_REVIEW_TIMESTAMP_FILE="/run/autogain/autogain_review_timestamp" \
+    # The maximum allowable percentage of strong messages
     AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX=5.0 \
+    # The minimum allowable percentage of strong messages
     AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN=1.0 \
+    # The number of seconds that autogain "init" stage should run for, for each gain level
     AUTOGAIN_INITIAL_PERIOD=7200 \
+    # The minimum number of local_accepted messages that autogain "init" stage should run for, for each gain level
     AUTOGAIN_INITIAL_MSGS_ACCEPTED=500000 \
-    AUTOGAIN_FINETUNE_MSGS_ACCEPTED=1000000 \
+    # The number of seconds that autogain "finetune" stage should run for, for each gain level
     AUTOGAIN_FINETUNE_PERIOD=86400 \
+    # The minimum number of local_accepted messages that autogain "finetune" stage should run for, for each gain level
+    AUTOGAIN_FINETUNE_MSGS_ACCEPTED=1000000 \
+    # How long to run once finetune stage has finished before we start the process over (1 year)
     AUTOGAIN_FINISHED_PERIOD=31536000 \
+    # Maximum gain level that autogain should use
     AUTOGAIN_MAX_GAIN_VALUE=49.6 \
+    # Minimum gain level that autogain should use
     AUTOGAIN_MIN_GAIN_VALUE=0.0 \
-    GAIN_VALUE_FILE="/tmp/.gain_current" \
-    AUTOGAIN_RUNNING_FILE="/tmp/.autogain_running"
+    # State file that will disappear when the container is rebuilt/restarted - so autogain can detect container restart/rebuild
+    AUTOGAIN_RUNNING_FILE="/tmp/.autogain_running" \
+    ###########################################################################
+    # Protobuf data from readsb
+    READSB_STATS_PB_FILE="/run/readsb/stats.pb" \
+    # Protobuf definition
+    READSB_PROTO_PATH="/opt/readsb-protobuf" \
+    # Current gain value
+    GAIN_VALUE_FILE="/tmp/.gain_current"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

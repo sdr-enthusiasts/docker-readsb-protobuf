@@ -38,10 +38,6 @@ gain_levels+=(44.5)
 gain_levels+=(48.0)
 gain_levels+=(49.6)
 
-# Protobuf data from readsb
-READSB_STATS_PB_FILE="/run/readsb/stats.pb"
-READSB_PROTO_PATH="/opt/readsb-protobuf"
-
 # Files containing variables to persist between runs of this script
 AUTOGAIN_LOGFILE="/run/autogain/autogain_log"
 echo "" >> "$AUTOGAIN_LOGFILE"
@@ -473,34 +469,34 @@ function adjust_minimum_gain_if_required() {
     # -----
     logger_debug "Entering: adjust_minimum_gain_if_required"
 
+    # Prepare local variables
+    local check_state
     check_state="finding_pct_strong_msgs_between_min_max"
+    local count_below_min
     count_below_min=0
     # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...
     while read -r line; do
         # Get gain level and percentage of strong messages
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         pct_strong_msgs=$(echo "$line" | cut -d ' ' -f 2)
-        # Depending on state, either find the "good" region, and then find where we're below it.
-        case "$check_state" in
-            finding_pct_strong_msgs_between_min_max)
-                # Look for gain levels that have a suitable percentage of strong messages
-                bc_expression="$pct_strong_msgs <= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX)"
-                if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                    bc_expression="$pct_strong_msgs >= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN)"
-                    if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                        check_state="look_for_consecutive_below_min"
-                    fi
-                fi
-                ;;
-            look_for_consecutive_below_min)
-                # Look for gain levels that have a percentage of strong messages below the minimum
-                # This would indicate we've gone past the "good" region
-                bc_expression="($pct_strong_msgs < $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
-                if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
-                    count_below_min=$((count_below_min + 1))
-                fi
-                ;;
-        esac                            
+        # Look for gain levels that have a suitable percentage of strong messages
+        bc_expression="$pct_strong_msgs <= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX"
+        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+            bc_expression="$pct_strong_msgs >= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN"
+            if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+                # Gain levels in this block are "good" (within min/max percent of strong messages)
+                count_below_min=0
+                logger_debug "adjust_minimum_gain_if_required: Found end of 'good' range at gain level $gain_level dB"
+            else
+                # Gain levels in this block are below min strong messages
+                count_below_min=$((count_below_min + 1))
+                logger_debug "adjust_minimum_gain_if_required: Consecutive below minimum % strong messages: $count_below_min"
+            fi
+        else
+            # Gain levels in this block are above max strong messages
+            count_below_min=0
+            logger_debug "adjust_minimum_gain_if_required: Found gain level with % strong messages above max at gain level $gain_level dB"
+        fi                            
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
     # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
     # Bring up the minimum gain

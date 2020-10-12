@@ -53,6 +53,7 @@ function is_tcp_connection_established() {
 
 ##### MAIN SCRIPT #####
 
+##### Network Connections #####
 # If using --net-connector, ensure each net-connector connection is established.
 # Only need to do this if networking is enabled
 if [[ -n "$READSB_NET_ENABLE" ]]; then
@@ -69,13 +70,66 @@ if [[ -n "$READSB_NET_ENABLE" ]]; then
 
             # Is the connection established?
             if is_tcp_connection_established "$NET_CONNECTOR_ELEMENT_IP" "$NET_CONNECTOR_ELEMENT_PORT"; then
-                echo "net-connector to $NET_CONNECTOR_ELEMENT_IP:$NET_CONNECTOR_ELEMENT_PORT established OK"
+                echo "net-connector to $NET_CONNECTOR_ELEMENT_IP:$NET_CONNECTOR_ELEMENT_PORT established OK: HEALTHY"
             else
-                echo "net-connector to $NET_CONNECTOR_ELEMENT_IP:$NET_CONNECTOR_ELEMENT_PORT not established"
+                echo "net-connector to $NET_CONNECTOR_ELEMENT_IP:$NET_CONNECTOR_ELEMENT_PORT not established: UNHEALTHY"
                 exit 1
             fi
         done
     fi
 fi
+
+##### SDR #####
+# If using --device-type=*, ensure local messages are being received/accepted.
+# Only need to do this if a local radio is attached
+if [[ -n "$READSB_DEVICE_TYPE" ]]; then
+    case $READSB_DEVICE_TYPE in
+        rtlsdr | bladerf | modesbeast | gnshulc | plutosdr)
+        returnvalue=$(protoc \
+            --proto_path="$READSB_PROTO_PATH" \
+            --decode Statistics \
+            readsb.proto < "$READSB_STATS_PB_FILE" | \
+            # Just get the last_15min section
+            grep -A 999 --max-count=1 "last_15min {" | \
+            grep -B 999 --max-count=1 '}' | \
+            # Remove the section wrappers
+            grep -v '{' | \
+            grep -v '}' | \
+            # Delete whitespace
+            tr -d ' ' | \
+            # Grep for the key we're looking for
+            grep "local_accepted" | \
+            # Return the value only
+            cut -d ':' -f 2)
+        # Log healthy/unhealthy and exit abnormally if unhealthy
+        if [[ $(echo "$(echo $returnvalue) > 0" | bc -l) -eq 1 ]]; then
+            echo "last_15min:local_accepted is $returnvalue: HEALTHY"
+        else
+            echo "last_15min:local_accepted is 0: UNHEALTHY"
+            exit 1
+        fi
+        ;;
+    esac
+fi
+
+##### Service Death Counts #####
+services=('autogain' 'collectd' 'graphs_1h-24h' 'graphs_7d-1y' 'lighttpd' 'readsb' 'readsbrrd')
+# For each service...
+for service in "${services[@]}"; do
+    # Get number of non-zero service exits
+    returnvalue=$(s6-svdt \
+                    -s "/run/s6/services/$service" | \
+                    grep -v 'exitcode 0' | \
+                    wc -l)
+    # Reset service death counts
+    s6-svdt-clear "/run/s6/services/$service"
+    # Log healthy/unhealthy and exit abnormally if unhealthy
+    if [[ "$returnvalue" -eq "0" ]]; then
+        echo "abnormal death count for service $service is $returnvalue: HEALTHY"
+    else
+        echo "abnormal death count for service $service is $returnvalue: UNHEALTHY"
+        exit 1
+    fi
+done
 
 exit 0
