@@ -61,6 +61,7 @@ ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# shellcheck disable=SC1091
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
@@ -249,7 +250,7 @@ RUN set -x && \
     # Install telegraf
     curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
     source /etc/os-release && \ 
-    echo "deb https://repos.influxdata.com/debian $(echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/influxdb.list && \
+    echo "deb https://repos.influxdata.com/debian "$VERSION_CODENAME" stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y telegraf && \
     # Deploy s6-overlay.
