@@ -4,6 +4,8 @@
 
 This version uses Googles protocol buffer for data storage and exchange with web application. Saves on storage space and bandwidth.
 
+This container also contains InfluxData's [Telegraf](https://docs.influxdata.com/telegraf/), and can send flight data and `readsb` metrics to InfluxDB (if wanted - not started by default).
+
 Support for all supported SDRs is compiled in. Builds and runs on x86_64, arm32v7 and arm64v8 (see below).
 
 This image will configure a software-defined radio (SDR) to receive and decode Mode-S/ADSB/TIS data from aircraft within range, for use with other services such as:
@@ -48,6 +50,7 @@ Tested and working on:
     * [`readsb` ADALM-Pluto SDR Options](#readsb-adalm-pluto-sdr-options)
     * [`readsb` Graphs Options](#readsb-graphs-options)
     * [Auto-Gain Options](#auto-gain-options)
+    * [InfluxDB Options](#influxdb-options)
   * [Ports](#ports)
   * [Paths & Volumes](#paths--volumes)
   * [Auto-Gain system](#auto-gain-system)
@@ -57,6 +60,20 @@ Tested and working on:
     * [State/Log/Stats Files](#statelogstats-files)
     * [Forcing auto-gain to re-run from scrach](#forcing-auto-gain-to-re-run-from-scrach)
   * [Advanced Usage: Creating an MLAT Hub](#advanced-usage-creating-an-mlat-hub)
+  * [Grafana Dashboard](#grafana-dashboard)
+  * [InfluxDB Schema](#influxdb-schema)
+    * [`aircraft` Measurement](#aircraft-measurement)
+      * [Tag Keys](#tag-keys)
+      * [Fields](#fields)
+    * [`autogain` Measurement](#autogain-measurement)
+      * [Tag Keys](#tag-keys-1)
+    * [Field Keys](#field-keys)
+    * [`polar_range` Measurement](#polar_range-measurement)
+      * [Tag Keys](#tag-keys-2)
+    * [Field Keys](#field-keys-1)
+    * [`readsb` Measurement](#readsb-measurement)
+      * [Tag Keys](#tag-keys-3)
+    * [Field Keys](#field-keys-2)
   * [Getting help](#getting-help)
   * [Changelog](#changelog)
 
@@ -125,6 +142,7 @@ docker run \
  -it \
  --restart=always \
  --name readsb \
+ --hostname readsb \
  --device /dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER \
  -p 8080:8080 \
  -p 30005:30005 \
@@ -152,6 +170,7 @@ docker run \
  -it \
  --restart=always \
  --name readsb \
+ --hostname readsb \
  --device /dev/bus/usb/001/004 \
  -p 8080:8080 \
  -p 30005:30005 \
@@ -193,6 +212,7 @@ services:
     image: mikenye/readsb-protobuf
     tty: true
     container_name: readsb
+    hostname: readsb
     restart: always
     devices:
       - /dev/bus/usb/001/004:/dev/bus/usb/001/004
@@ -445,6 +465,18 @@ These variables control the auto-gain system (explained further below). These sh
 | `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | The minimum number of successfully accepted messages per gain level measured. | `500000` |
 | `AUTOGAIN_SERVICE_PERIOD` | How often the auto-gain system will check results and perform actions, in seconds | `900` |
 
+### InfluxDB Options
+
+These variables control the sending of flight data and readsb metrics to [InfluxDB](https://docs.influxdata.com/influxdb/) (via a built-in instance of [Telegraf(https://docs.influxdata.com/telegraf/)]).
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `INFLUXDBURL` | The full HTTP URL for your InfluxDB instance. | Unset |
+| `INFLUXDBUSERNAME` | If using authentication, a username for your InfluxDB instance. If not using authentication, leave unset. | Unset |
+| `INFLUXDBPASSWORD` | If using authentication, a password for your InfluxDB instance. If not using authentication, leave unset. | Unset |
+
+If `INFLUXDBURL` is left unset, the built-in instance of Telegraf will not be started.
+
 ## Ports
 
 | Port | Details |
@@ -568,6 +600,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
     image: mikenye/readsb-protobuf:latest
     tty: true
     container_name: readsb
+    hostname: readsb
     restart: always
     devices:
       - /dev/bus/usb/001/004:/dev/bus/usb/001/004
@@ -599,6 +632,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
     image: mikenye/readsb-protobuf:latest
     tty: true
     container_name: mlathub
+    hostname: mlathub
     restart: always
     ports:
       - 30105:30105
@@ -659,6 +693,141 @@ In this example:
 * `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
 
 **You must make absolutely certain that `READSB_FORWARD_MLAT` is NOT set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
+
+## Grafana Dashboard
+
+If you're using `INFLUXDBURL` and pushing metrics into InfluxDB, I've put together an example Grafana dashboard, which can be found here:
+
+<https://grafana.com/grafana/dashboards/13168>
+
+## InfluxDB Schema
+
+If `INFLUXDBURL` is set, an instance of Telegraf will be started within the container, and metrics will be written to the InfluxDB.
+
+The database `readsb` will be created if it does not exist.
+
+Within this database are the following measurements:
+
+### `aircraft` Measurement
+
+Tags and fields used for this measurement should match [Virtual Radar Server's JSON response ("the new way")](https://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx).
+
+#### Tag Keys
+
+| Tag Key  | Type | Description |
+|----------|------|-------------|
+| `Call`   | String | The aircraft's callsign. |
+| `Gnd`    | Boolean | True if the aircraft is on the ground. |
+| `Icao`   | String | The ICAO of the aircraft. |
+| `Mlat`   | Boolean | True if the latitude and longitude appear to have been calculated by an MLAT server and were not transmitted by the aircraft. |
+| `SpdTyp` | Number | The type of speed that Spd represents. Only used with raw feeds. `0`/`missing` = ground speed, `1` = ground speed reversing, `2` = indicated air speed, `3` = true air speed. |
+| `Sqk`    | Number | The squawk as a decimal number (e.g. a squawk of `7654` is passed as `7654`, not `4012`).
+| `Tisb`   | Boolean | True if the last message received for the aircraft was from a TIS-B source. |
+| `TrkH`   | Boolean | True if Trak is the aircraft's heading, false if it's the ground track. Default to ground track until told otherwise. |
+| `VsiT`   | Number | `0` = vertical speed is barometric, `1` = vertical speed is geometric. Default to barometric until told otherwise. |
+| `host`   | String | The hostname of the container. |
+
+#### Fields
+
+| Field Key | Type  | Description |
+|-----------|-------|-------------|
+| `Alt`     | float | The altitude in feet at standard pressure. |
+| `Cmsgs`   | float | The count of messages received for the aircraft. |
+| `GAlt`    | float | The altitude adjusted for local air pressure, should be roughly the height above mean sea level. |
+| `InHg`    | float | The air pressure in inches of mercury that was used to calculate the AMSL altitude from the standard pressure altitude. |
+| `Lat`     | float | The aircraft's latitude over the ground. |
+| `Long`    | float | The aircraft's longitude over the ground. |
+| `PosTime` | float | The time (at UTC in JavaScript ticks) that the position was last reported by the aircraft. |
+| `Sig`     | float | The signal level for the last message received from the aircraft, as reported by the receiver. Not all receivers pass signal levels. The value's units are receiver-dependent. |
+| `Spd`     | float | The ground speed in knots. |
+| `TAlt`    | float | The target altitude, in feet, set on the autopilot / FMS etc. |
+| `TTrk`    | float | The track or heading currently set on the aircraft's autopilot or FMS. |
+| `Trak`    | float | Aircraft's track angle across the ground clockwise from 0° north. |
+| `Trt`     | float | Transponder type - `0`=Unknown, `1`=Mode-S, `2`=ADS-B (unknown version), `3`=ADS-B 0, `4`=ADS-B 1, `5`=ADS-B 2. |
+| `Vsi`     | float | Vertical speed in feet per minute. |
+
+### `autogain` Measurement
+
+#### Tag Keys
+
+| Tag Key | Type | Description |
+|---------|------|-------|
+| `host`  | String | The hostname of the container. |
+
+### Field Keys
+
+| Field Key | Type  | Description |
+|-----------|-------|-------------|
+| `autogain_current_value` | float | The current gain level as set by autogain. |
+| `autogain_max_value` | float | The maximum gain level as set by autogain. |
+| `autogain_min_value` | float | The minimum gain level as set by autogain. |
+| `autogain_pct_strong_messages_max` | float | The maximum percentage of strong messages. |
+| `autogain_pct_strong_messages_min` | float | The minimum percentage of strong messages. |
+
+### `polar_range` Measurement
+
+#### Tag Keys
+
+| Tag Key | Type | Description |
+|---------|------|-------|
+| `bearing` | Number | The bearing value is between `00` and `71`. Each bearing represents 5° on the compass, with `00` as North. |
+| `host`  | String | The hostname of the container. |
+
+### Field Keys
+
+| Field Key | Type  | Description |
+|-----------|-------|-------------|
+| `range` | float | The range (in metres) at a specific bearing.
+
+### `readsb` Measurement
+
+#### Tag Keys
+
+| Tag Key | Type | Description |
+|---------|------|-------|
+| `host`  | String | The hostname of the container. |
+
+### Field Keys
+
+Field keys should be as-per the `StatisticEntry` message schema from [`readsb.proto`](https://github.com/Mictronics/readsb-protobuf/blob/dev/readsb.proto).
+
+| Field Key | Type | Description |
+|---------|------|-------|
+| `cpr_airborne`                  | float | Total number of airborne CPR messages received |
+| `cpr_global_bad`                | float | Global positions that were rejected because they were inconsistent |
+| `cpr_global_ok`                 | float | Global positions successfuly derived |
+| `cpr_global_range`              | float | Global positions that were rejected because they exceeded the receiver max range |
+| `cpr_global_skipped`            | float | Global position attempts skipped because we did not have the right data (e.g. even/odd messages crossed a zone boundary) |
+| `cpr_global_speed`              | float | Global positions that were rejected because they failed the inter-position speed check |
+| `cpr_local_aircraft_relative`   | float | Local positions found relative to a previous aircraft position |
+| `cpr_local_ok`                  | float | Local (relative) positions successfully found |
+| `cpr_local_range`               | float | Local positions not used because they exceeded the receiver max range or fell into the ambiguous part of the receiver range |
+| `cpr_local_skipped`             | float | Local (relative) positions not used because we did not have the right data |
+| `cpr_local_speed`               | float | Local positions not used because they failed the inter-position speed check |
+| `cpr_surface`                   | float | Total number of surface CPR messages received |
+| `cpu_background`                | float | Milliseconds spent doing network I/O, processing received network messages, and periodic tasks. |
+| `cpu_demod`                     | float | Milliseconds spent doing demodulation and decoding in response to data from a SDR dongle. | 
+| `cpu_reader`                    | float | Milliseconds spent reading sample data over USB from a SDR dongle. |
+| `local_accepted`                | float | The number of valid Mode S messages accepted from a local SDR with N-bit errors corrected. |
+| `local_modeac`                  | float | Number of Mode A / C messages decoded. |
+| `local_modes`                   | float | Number of Mode S preambles received. This is *not* the number of valid messages! |
+| `local_noise`                   | float | Calculated receiver noise floor level. |
+| `local_peak_signal`             | float | Peak signal power of a successfully received message, in dbFS; always negative. |
+| `local_samples_dropped`         | float | Number of sample blocks dropped before processing. A nonzero value means CPU overload. |
+| `local_samples_processed`       | float | Number of sample blocks processed. |
+| `local_signal`                  | float | Mean signal power of successfully received messages, in dbFS; always negative. |
+| `local_strong_signals`          | float | Number of messages received that had a signal power above -3dBFS. |
+| `local_unknown_icao`            | float | Number of Mode S messages which looked like they might be valid but we didn't recognize the ICAO address and it was one of the message types where we can't be sure it's valid in this case. |
+| `max_distance_in_metres`        | float | Maximum range in metres |
+| `max_distance_in_nautical_miles`| float | Maximum range in nautical miles |
+| `messages`                      | float | Total number of messages accepted by readsb from any source |
+| `remote_accepted`               | float | Number of valid Mode S messages accepted over the network with N-bit errors corrected. |
+| `remote_modeac`                 | float | Number of Mode A / C messages received. |
+| `remote_modes`                  | float | Number of Mode S messages received. |
+| `tracks_mlat_position`          | float | Tracks consisting of a position derived from MLAT |
+| `tracks_new`                    | float | Total tracks (aircrafts) created. Each track represents a unique aircraft and persists for up to 5 minutes. |
+| `tracks_single_message`         | float | Tracks consisting of only a single message. These are usually due to message decoding errors that produce a bad aircraft address. |
+| `tracks_with_position`          | float | Tracks consisting of a position. |
 
 ## Getting help
 
