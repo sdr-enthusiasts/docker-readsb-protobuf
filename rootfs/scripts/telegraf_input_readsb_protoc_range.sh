@@ -39,7 +39,7 @@ timestamp="$(($(date +%s)*1000*1000*1000))"
 for key in "${!range[@]}"; do
 
   # Prepare output - add measurement
-  output="polar_range,bearing=$(printf "%.2d " $key) range=${range[$key]} $timestamp"
+  output="polar_range,bearing=$(printf "%.2d " "$key") range=${range[$key]} $timestamp"
   
   echo "$output"
 done

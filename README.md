@@ -63,17 +63,9 @@ Tested and working on:
   * [Grafana Dashboard](#grafana-dashboard)
   * [InfluxDB Schema](#influxdb-schema)
     * [`aircraft` Measurement](#aircraft-measurement)
-      * [Tag Keys](#tag-keys)
-      * [Fields](#fields)
     * [`autogain` Measurement](#autogain-measurement)
-      * [Tag Keys](#tag-keys-1)
-    * [Field Keys](#field-keys)
     * [`polar_range` Measurement](#polar_range-measurement)
-      * [Tag Keys](#tag-keys-2)
-    * [Field Keys](#field-keys-1)
     * [`readsb` Measurement](#readsb-measurement)
-      * [Tag Keys](#tag-keys-3)
-    * [Field Keys](#field-keys-2)
   * [Getting help](#getting-help)
   * [Changelog](#changelog)
 
@@ -467,7 +459,7 @@ These variables control the auto-gain system (explained further below). These sh
 
 ### InfluxDB Options
 
-These variables control the sending of flight data and readsb metrics to [InfluxDB](https://docs.influxdata.com/influxdb/) (via a built-in instance of [Telegraf(https://docs.influxdata.com/telegraf/)]).
+These variables control the sending of flight data and readsb metrics to [InfluxDB](https://docs.influxdata.com/influxdb/) (via a built-in instance of [Telegraf](https://docs.influxdata.com/telegraf/)).
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -712,8 +704,6 @@ Within this database are the following measurements:
 
 Tags and fields used for this measurement should match [Virtual Radar Server's JSON response ("the new way")](https://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx).
 
-#### Tag Keys
-
 | Tag Key  | Type | Description |
 |----------|------|-------------|
 | `Call`   | String | The aircraft's callsign. |
@@ -726,8 +716,6 @@ Tags and fields used for this measurement should match [Virtual Radar Server's J
 | `TrkH`   | Boolean | True if Trak is the aircraft's heading, false if it's the ground track. Default to ground track until told otherwise. |
 | `VsiT`   | Number | `0` = vertical speed is barometric, `1` = vertical speed is geometric. Default to barometric until told otherwise. |
 | `host`   | String | The hostname of the container. |
-
-#### Fields
 
 | Field Key | Type  | Description |
 |-----------|-------|-------------|
@@ -748,13 +736,9 @@ Tags and fields used for this measurement should match [Virtual Radar Server's J
 
 ### `autogain` Measurement
 
-#### Tag Keys
-
 | Tag Key | Type | Description |
 |---------|------|-------|
 | `host`  | String | The hostname of the container. |
-
-### Field Keys
 
 | Field Key | Type  | Description |
 |-----------|-------|-------------|
@@ -766,14 +750,10 @@ Tags and fields used for this measurement should match [Virtual Radar Server's J
 
 ### `polar_range` Measurement
 
-#### Tag Keys
-
 | Tag Key | Type | Description |
 |---------|------|-------|
 | `bearing` | Number | The bearing value is between `00` and `71`. Each bearing represents 5° on the compass, with `00` as North. |
 | `host`  | String | The hostname of the container. |
-
-### Field Keys
 
 | Field Key | Type  | Description |
 |-----------|-------|-------------|
@@ -781,13 +761,9 @@ Tags and fields used for this measurement should match [Virtual Radar Server's J
 
 ### `readsb` Measurement
 
-#### Tag Keys
-
 | Tag Key | Type | Description |
 |---------|------|-------|
 | `host`  | String | The hostname of the container. |
-
-### Field Keys
 
 Field keys should be as-per the `StatisticEntry` message schema from [`readsb.proto`](https://github.com/Mictronics/readsb-protobuf/blob/dev/readsb.proto).
 
@@ -806,7 +782,7 @@ Field keys should be as-per the `StatisticEntry` message schema from [`readsb.pr
 | `cpr_local_speed`               | float | Local positions not used because they failed the inter-position speed check |
 | `cpr_surface`                   | float | Total number of surface CPR messages received |
 | `cpu_background`                | float | Milliseconds spent doing network I/O, processing received network messages, and periodic tasks. |
-| `cpu_demod`                     | float | Milliseconds spent doing demodulation and decoding in response to data from a SDR dongle. | 
+| `cpu_demod`                     | float | Milliseconds spent doing demodulation and decoding in response to data from a SDR dongle. |
 | `cpu_reader`                    | float | Milliseconds spent reading sample data over USB from a SDR dongle. |
 | `local_accepted`                | float | The number of valid Mode S messages accepted from a local SDR with N-bit errors corrected. |
 | `local_modeac`                  | float | Number of Mode A / C messages decoded. |
