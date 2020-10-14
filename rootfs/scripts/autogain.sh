@@ -480,7 +480,7 @@ function adjust_minimum_gain_if_required() {
             if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
                 # Gain levels in this block are "good" (within min/max percent of strong messages)
                 count_below_min=0
-                logger_debug "adjust_minimum_gain_if_required: Found end of 'good' range at gain level $gain_level dB"
+                logger_debug "adjust_minimum_gain_if_required: Found 'good' amount of strong messages at gain level $gain_level dB"
             else
                 # Gain levels in this block are below min strong messages
                 count_below_min=$((count_below_min + 1))
