@@ -589,8 +589,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
                                     # Try values sandwiching the best gain
                                     best_gain_number=$(get_gain_number "$best_gain")
-                                    upper_gain_number=$((best_gain_number + 2))
-                                    lower_gain_number=$((best_gain_number - 2))
+                                    upper_gain_number=$((best_gain_number + 3))
+                                    lower_gain_number=$((best_gain_number - 3))
                                     if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
                                         upper_gain_number=$((${#gain_levels[@]}-1))
                                     fi
@@ -634,8 +634,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
                                 # Try values sandwiching the best gain
                                 best_gain_number=$(get_gain_number "$best_gain")
-                                upper_gain_number=$((best_gain_number + 2))
-                                lower_gain_number=$((best_gain_number - 2))
+                                upper_gain_number=$((best_gain_number + 3))
+                                lower_gain_number=$((best_gain_number - 3))
                                 if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
                                     upper_gain_number=$((${#gain_levels[@]}-1))
                                 fi
