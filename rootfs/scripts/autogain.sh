@@ -600,6 +600,12 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                     echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
                                     echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
 
+                                    # Store original stats files for later review
+                                    cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+
                                     # Initialise next stage
                                     autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
 
@@ -638,6 +644,12 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 fi
                                 echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
                                 echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+
+                                # Store original stats files for later review
+                                cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
 
                                 # Initialise next stage
                                 autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
@@ -704,6 +716,12 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                     # Switch to best gain
                                     set_readsb_gain "$best_gain"
                                     
+                                    # Store original stats files for later review
+                                    cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+
                                     # Initialise next stage
                                     echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
                                     echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
@@ -735,6 +753,12 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
                                 # Switch to best gain
                                 set_readsb_gain "$best_gain"
+
+                                # Store original stats files for later review
+                                cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
                                 
                                 # Initialise next stage
                                 echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
