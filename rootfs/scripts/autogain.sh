@@ -225,7 +225,7 @@ function get_pct_strong_signals() {
         local_strong_signals=0
     fi
     local_accepted=$(get_readsb_stat total local_accepted)
-    pct_strong_signals="$(echo "scale=2; ($local_strong_signals / $local_accepted) * 100" | bc -l)"
+    pct_strong_signals="$(echo "scale=4; ($local_strong_signals / $local_accepted) * 100" | bc -l)"
     logger_debug "Percentage of strong signals: $pct_strong_signals"
     echo "$pct_strong_signals"
     logger_debug "Exiting: get_pct_strong_signals"
