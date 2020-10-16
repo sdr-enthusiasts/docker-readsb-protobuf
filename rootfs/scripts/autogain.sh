@@ -434,7 +434,7 @@ function rank_gain_levels () {
 
     # Write out results file
     for gain_level in "${!gain_rank[@]}"; do
-        echo "$gain_level:${gain_rank[$gain_level]}" > "/tmp/.autogain_results"
+        echo "$gain_level:${gain_rank[$gain_level]}" >> "/tmp/.autogain_results"
     done
     sort -n "/tmp/.autogain_results" > "$AUTOGAIN_RESULTS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
     rm "/tmp/.autogain_results"
