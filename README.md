@@ -509,9 +509,9 @@ In the initialisation process:
 
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
 1. Results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
-2. Check to ensure at least `AUTOGAIN_INITIAL_MSGS_ACCEPTED` messages have been locally accepted (1,000,000 by default). If not, contine collecting data for up to 24 hours. This combination of time and number of messages ensures we have enough data to make a valid initial assessment of each gain level.
-3. Gain level is lowered by one level.
-4. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
+1. Check to ensure at least `AUTOGAIN_INITIAL_MSGS_ACCEPTED` messages have been locally accepted (1,000,000 by default). If not, contine collecting data for up to 24 hours. This combination of time and number of messages ensures we have enough data to make a valid initial assessment of each gain level.
+1. Gain level is lowered by one level.
+1. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
 At this point, all of the tested gain levels are ranked based on a combination of the following:
 
@@ -529,9 +529,9 @@ Auto-gain then moves onto the fine-tuning stage.
 In the fine-tuning process:
 
 1. `readsb` is set to maximum gain level chosen at the end of the initialisation process.
-2. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (7 days by default).
-3. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (10,000,000 by default). If not, contine collecting data for up to 48 hours. This combination of time and number of messages ensures we have enough data to make an accurate assessment of each gain level, and by using 7 days this ensures any peaks/troughs in data due to quiet/busy days of the week do not skew results.
-4. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
+1. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (7 days by default).
+1. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (10,000,000 by default). If not, contine collecting data for up to 48 hours. This combination of time and number of messages ensures we have enough data to make an accurate assessment of each gain level, and by using 7 days this ensures any peaks/troughs in data due to quiet/busy days of the week do not skew results.
+1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
 
 At this point, all of the tested gain levels are ranked based on a combination of the following:
 
