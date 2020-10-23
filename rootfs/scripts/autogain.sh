@@ -66,7 +66,7 @@ AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE="/run/autogain/autogain_stats.total_acce
 # best SNR (local_signal - local_noise)
 AUTOGAIN_STATS_SNR_FILE="/run/autogain/autogain_stats.snr"
 # number of tracks with position
-AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE="/run/autogain/autogain_stats.tracks_with_position"
+AUTOGAIN_STATS_TRACKS_NEW_FILE="/run/autogain/autogain_stats.tracks_new"
 # update interval
 AUTOGAIN_INTERVAL_FILE="/run/autogain/autogain_interval"
 # results for init stage
@@ -218,7 +218,7 @@ function are_required_stats_available() {
     stats_used+=("total local_signal")
     stats_used+=("total local_noise")
     stats_used+=("total max_distance_in_metres")
-    stats_used+=("total tracks_with_position")
+    stats_used+=("total tracks_new")
 
     for stat_used in "${stats_used[@]}"; do
 
@@ -250,18 +250,18 @@ function get_pct_strong_signals() {
     logger_debug "Exiting: get_pct_strong_signals"
 }
 
-function get_tracks_with_position() {
+function get_tracks_new() {
     # Return the number of tracks with position
     # -----
-    logger_debug "Entering: get_tracks_with_position"
-    local tracks_with_position
-    if ! tracks_with_position=$(get_readsb_stat total tracks_with_position); then
-        logger_debug "No 'tracks_with_position' measurement! Setting to 0."
-        tracks_with_position=0
+    logger_debug "Entering: get_tracks_new"
+    local tracks_new
+    if ! tracks_new=$(get_readsb_stat total tracks_new); then
+        logger_debug "No 'tracks_new' measurement! Setting to 0."
+        tracks_new=0
     fi
-    logger_debug "tracks_with_position: $tracks_with_position"
-    echo "$tracks_with_position"
-    logger_debug "Exiting: tracks_with_position"
+    logger_debug "tracks_new: $tracks_new"
+    echo "$tracks_new"
+    logger_debug "Exiting: tracks_new"
 }
 
 function get_snr() {
@@ -298,7 +298,7 @@ function rm_stats_files () {
     rm "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_SNR_FILE" > /dev/null 2>&1 || true
-    rm "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" > /dev/null 2>&1 || true
+    rm "$AUTOGAIN_STATS_TRACKS_NEW_FILE" > /dev/null 2>&1 || true
     logger_debug "Exiting: rm_stats_files"
 }
 
@@ -308,7 +308,7 @@ function archive_stats_files () {
     cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
     cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
     cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-    cp "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    cp "$AUTOGAIN_STATS_TRACKS_NEW_FILE" "$AUTOGAIN_STATS_TRACKS_NEW_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
     logger_debug "Exiting: archive_stats_files"
 }
 
@@ -380,8 +380,8 @@ function update_stats_files () {
     # best SNR (local_signal - local_noise)
     echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_snr)" >> "$AUTOGAIN_STATS_SNR_FILE"
 
-    # number of tracks_with_position
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_tracks_with_position)" >> "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
+    # number of tracks_new
+    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_tracks_new)" >> "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
 
     logger_debug "Exiting: update_stats_files"   
 }
@@ -432,15 +432,15 @@ function rank_gain_levels () {
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
 
-    # Rank best tracks_with_position
-    sort -k2 -o "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
+    # Rank best tracks_new
+    sort -k2 -o "$AUTOGAIN_STATS_TRACKS_NEW_FILE" "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
     points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
         gain_rank[$gain_level]=$((gain_rank[$gain_level] + points))
         points=$((points + 1))
-    done < "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
+    done < "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
 
     # Rank best SNR (local_signal - local_noise) and award points
     sort -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
