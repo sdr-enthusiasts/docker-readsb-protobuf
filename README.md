@@ -499,7 +499,19 @@ Some common ports are as follows (which may or may not be in use depending on yo
 
 An automatic gain adjustment system is included in this container, and can be activated by setting the environment variable `READSB_GAIN` to `autogain`. You should also map `/run/autogain` to persistant storage, otherwise the auto-gain system will start over each time the container is restarted.
 
-*Why is this written in bash?* Because I wanted to keep the container size down and not have to install an interpreter like python. I don't know C or Perl or many other languages.
+*Why is this written in bash?* Because I wanted to keep the container size down and not have to install an interpreter like python. I don't know C/Go/Perl or any other languages.
+
+Auto-gain will take several weeks to initially (over the period of a week or so) work out feasible maximum and minimum gain levels for your environment. It will then perform a fine-tune process to find the optimal gain level.
+
+During each process, gain levels are ranked as follows:
+
+* The range achievable by each gain level
+* The number of aircraft tracks with positions
+* The signal-to-noise ratio of the receiver
+
+The ranking process is done by sorting the gain levels for each statistic from worst to best, then awarding points. 0 points are awarded for the worst gain level, 1 point for the next gain level all the way up to several points for the best gain level (total number of points is the number of gain levels tested). The number of points for each gain level is totalled, and the optimal gain level is the level with the largest number of points. Any gain level with a percentage of "strong signals" outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` is discarded.
+
+Using this method, auto-gain tried to achieve the best balance of range, tracks and signal-to-noise ratio, whilst ensuring an appropriate number of "strong signals".
 
 The auto-gain system will work as follows:
 
@@ -513,12 +525,7 @@ In the initialisation process:
 1. Gain level is lowered by one level.
 1. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
-At this point, all of the tested gain levels are ranked based on a combination of the following:
-
-* Longest range
-* Number of tracks with position
-* Signal-to-Noise ratio
-* Any gain levels outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` are discarded
+At this point, all of the tested gain levels are ranked based on the criterea discussed above.
 
 The gain level with the most points is taken, and the maximum and minimum gain levels used by the fine-tuning process are three levels above and below this level.
 
@@ -533,12 +540,7 @@ In the fine-tuning process:
 1. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (10,000,000 by default). If not, contine collecting data for up to 48 hours. This combination of time and number of messages ensures we have enough data to make an accurate assessment of each gain level, and by using 7 days this ensures any peaks/troughs in data due to quiet/busy days of the week do not skew results.
 1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
 
-At this point, all of the tested gain levels are ranked based on a combination of the following:
-
-* Longest range
-* Number of tracks with position
-* Signal-to-Noise ratio
-* Any gain levels outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` are discarded
+At this point, all of the tested gain levels are ranked based on the criterea discussed above.
 
 The gain level with the most points is chosen, and `readsb` is set to this gain level.
 
