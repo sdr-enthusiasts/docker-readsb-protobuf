@@ -1,8 +1,11 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 
-# temp for troubleshooting
-set -x
+# If troubleshooting:
+if [[ -n "$DEBUG_LOGGING" ]]; then
+    set -x
+    VERBOSE_LOGGING=true
+fi
 
 # Define globals
 
@@ -517,6 +520,84 @@ function is_current_gain_min_gain() {
     logger_debug "Exiting: is_current_gain_min_gain"
 }
 
+function autogain_finish_state_init() {
+    logger_debug "Entering: autogain_finish_state_init"
+    # Set review time 
+    increase_review_timestamp
+
+    # Gather statistics for the current gain level
+    update_stats_files
+
+    # Check to see if we should adjust the minimum gain
+    adjust_minimum_gain_if_required
+
+    # If current gain is at the minimum gain, then we're done with this stage
+    if is_current_gain_min_gain; then
+
+        # Determine the best gain
+        best_gain=$(rank_gain_levels)
+
+        # Inform user
+        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+
+        # Try values sandwiching the best gain
+        best_gain_number=$(get_gain_number "$best_gain")
+        upper_gain_number=$((best_gain_number + 3))
+        lower_gain_number=$((best_gain_number - 3))
+        if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
+            upper_gain_number=$((${#gain_levels[@]}-1))
+        fi
+        if [[ $lower_gain_number -lt 0 ]]; then
+            lower_gain_number=0
+        fi
+        echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+        echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+
+        # Store original stats files for later review
+        archive_stats_files
+
+        # Initialise next stage
+        autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
+
+        logger_debug "Exiting: autogain_finish_state_init"
+}
+
+function autogain_finish_state_finetune() {
+    logger_debug "Entering: autogain_finish_state_finetune"
+    # Set review time 
+    increase_review_timestamp
+
+    # Gather statistics for the current gain level
+    update_stats_files
+
+    # Check to see if we should adjust the minimum gain
+    adjust_minimum_gain_if_required
+
+    # If current gain is at the minimum gain, then we're done with this stage
+    if is_current_gain_min_gain; then
+
+        # Determine the best gain
+        best_gain=$(rank_gain_levels)
+
+        # Inform user
+        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+
+        # Switch to best gain
+        set_readsb_gain "$best_gain"
+        
+        # Store original stats files for later review
+        archive_stats_files
+
+        # Initialise next stage
+        echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+        echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
+
+        # TODO set while testing
+        echo "finish" > "$AUTOGAIN_STATE_FILE"
+        logger_debug "Exiting: autogain_finish_state_finetune"
+}
+
 ##### MAIN SCRIPT #####
 
 # If the user wants to use the autogain system...
@@ -572,85 +653,17 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
                             # Limit number of retries to 24 hours
                             if [[ "$(date +%s)" -gt "$(($(cat "$AUTOGAIN_CURRENT_TIMESTAMP_FILE") + 86400))" ]]; then
-
-                                # Set review time 
-                                increase_review_timestamp
-
-                                # Gather statistics for the current gain level
-                                update_stats_files
-
-                                # Check to see if we should adjust the minimum gain
-                                adjust_minimum_gain_if_required
-
-                                # If current gain is at the minimum gain, then we're done with this stage
-                                if is_current_gain_min_gain; then
-
-                                    # Determine the best gain
-                                    best_gain=$(rank_gain_levels)
-
-                                    # Inform user
-                                    logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
-
-                                    # Try values sandwiching the best gain
-                                    best_gain_number=$(get_gain_number "$best_gain")
-                                    upper_gain_number=$((best_gain_number + 3))
-                                    lower_gain_number=$((best_gain_number - 3))
-                                    if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
-                                        upper_gain_number=$((${#gain_levels[@]}-1))
-                                    fi
-                                    if [[ $lower_gain_number -lt 0 ]]; then
-                                        lower_gain_number=0
-                                    fi
-                                    echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-                                    echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-
-                                    # Store original stats files for later review
-                                    archive_stats_files
-
-                                    # Initialise next stage
-                                    autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
+                                
+                                # Finish init state
+                                autogain_finish_state_init
 
                                 fi
                             fi
                         
                         else
 
-                            # Set review time 
-                            increase_review_timestamp
-
-                            # Gather statistics for the current gain level
-                            update_stats_files
-
-                            # Check to see if we should adjust the minimum gain
-                            adjust_minimum_gain_if_required
-
-                            # If current gain is at the minimum gain, then we're done with this stage
-                            if is_current_gain_min_gain; then
-
-                                # Determine the best gain
-                                best_gain=$(rank_gain_levels)
-
-                                # Inform user
-                                logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
-
-                                # Try values sandwiching the best gain
-                                best_gain_number=$(get_gain_number "$best_gain")
-                                upper_gain_number=$((best_gain_number + 3))
-                                lower_gain_number=$((best_gain_number - 3))
-                                if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
-                                    upper_gain_number=$((${#gain_levels[@]}-1))
-                                fi
-                                if [[ $lower_gain_number -lt 0 ]]; then
-                                    lower_gain_number=0
-                                fi
-                                echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-                                echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-
-                                # Store original stats files for later review
-                                archive_stats_files
-
-                                # Initialise next stage
-                                autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
+                            # Finish init state
+                            autogain_finish_state_init
                             
                             # otherwise, reduce gain
                             else
@@ -693,72 +706,15 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             # Limit number of retries to 2 days
                             if [[ "$(date +%s)" -gt "$((AUTOGAIN_CURRENT_TIMESTAMP_FILE + 172800))" ]]; then
 
-                                # Set review time 
-                                increase_review_timestamp
+                                # Finish finetune state
+                                autogain_finish_state_finetune
 
-                                # Gather statistics for the current gain level
-                                update_stats_files
-
-                                # Check to see if we should adjust the minimum gain
-                                adjust_minimum_gain_if_required
-
-                                # If current gain is at the minimum gain, then we're done with this stage
-                                if is_current_gain_min_gain; then
-
-                                    # Determine the best gain
-                                    best_gain=$(rank_gain_levels)
-
-                                    # Inform user
-                                    logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
-
-                                    # Switch to best gain
-                                    set_readsb_gain "$best_gain"
-                                    
-                                    # Store original stats files for later review
-                                    archive_stats_files
-
-                                    # Initialise next stage
-                                    echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-                                    echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-                                    autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
-
-                                    # TODO set while testing
-                                    echo "finish" > "$AUTOGAIN_STATE_FILE"
                                 fi
                             fi
                         else
                                                 
-                            # Set review time 
-                            increase_review_timestamp
-
-                            # Gather statistics for the current gain level
-                            update_stats_files
-
-                            # Check to see if we should adjust the minimum gain
-                            adjust_minimum_gain_if_required
-
-                            # If current gain is at the minimum gain, then we're done with this stage
-                            if is_current_gain_min_gain; then
-
-                                # Determine the best gain
-                                best_gain=$(rank_gain_levels)
-
-                                # Inform user
-                                logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
-
-                                # Switch to best gain
-                                set_readsb_gain "$best_gain"
-
-                                # Store original stats files for later review
-                                archive_stats_files
-                                
-                                # Initialise next stage
-                                echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-                                echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
-                                autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
-
-                                # TODO set while testing
-                                echo "finish" > "$AUTOGAIN_STATE_FILE"
+                            # Finish finetune state
+                            autogain_finish_state_finetune
                             
                             # otherwise, reduce gain
                             else
