@@ -520,7 +520,9 @@ function is_current_gain_min_gain() {
     logger_debug "Exiting: is_current_gain_min_gain"
 }
 
-function autogain_finish_state_init() {
+function autogain_finish_gainlevel_init() {
+    # $1 = set to anything to go to the next gain level if needed
+    # -----
     logger_debug "Entering: autogain_finish_state_init"
     # Set review time 
     increase_review_timestamp
@@ -559,10 +561,18 @@ function autogain_finish_state_init() {
         # Initialise next stage
         autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
 
-        logger_debug "Exiting: autogain_finish_state_init"
+    # otherwise, reduce gain if required
+    else
+        if [[ -n "$1" ]]; then
+            reduce_gain
+        fi
+    fi
+    logger_debug "Exiting: autogain_finish_state_init"
 }
 
-function autogain_finish_state_finetune() {
+function autogain_finish_gainlevel_finetune() {
+    # $1 = set to anything to go to the next gain level if needed
+    # -----    
     logger_debug "Entering: autogain_finish_state_finetune"
     # Set review time 
     increase_review_timestamp
@@ -592,10 +602,14 @@ function autogain_finish_state_finetune() {
         echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
         echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
         autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
-
-        # TODO set while testing
-        echo "finish" > "$AUTOGAIN_STATE_FILE"
-        logger_debug "Exiting: autogain_finish_state_finetune"
+    
+    # otherwise, reduce gain if required
+    else
+        if [[ -n "$1" ]]; then
+            reduce_gain
+        fi
+    fi
+    logger_debug "Exiting: autogain_finish_state_finetune"
 }
 
 ##### MAIN SCRIPT #####
@@ -655,21 +669,15 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             if [[ "$(date +%s)" -gt "$(($(cat "$AUTOGAIN_CURRENT_TIMESTAMP_FILE") + 86400))" ]]; then
                                 
                                 # Finish init state
-                                autogain_finish_state_init
+                                autogain_finish_gainlevel_init
 
-                                fi
                             fi
                         
                         else
 
-                            # Finish init state
-                            autogain_finish_state_init
+                            # Finish init state or reduce gain
+                            autogain_finish_gainlevel_init reduce
                             
-                            # otherwise, reduce gain
-                            else
-                                reduce_gain
-
-                            fi
                         fi
                     fi
                     
@@ -707,20 +715,14 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             if [[ "$(date +%s)" -gt "$((AUTOGAIN_CURRENT_TIMESTAMP_FILE + 172800))" ]]; then
 
                                 # Finish finetune state
-                                autogain_finish_state_finetune
+                                autogain_finish_gainlevel_finetune
 
-                                fi
                             fi
                         else
                                                 
                             # Finish finetune state
-                            autogain_finish_state_finetune
+                            autogain_finish_gainlevel_finetune reduce
                             
-                            # otherwise, reduce gain
-                            else
-                                reduce_gain
-
-                            fi
                         fi
                     fi
                     
@@ -731,7 +733,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                 fi
                 ;;
 
-            finish)
+            finished)
 
                 logger_debug "In finished state"
 
