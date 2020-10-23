@@ -506,7 +506,7 @@ Auto-gain will take several weeks to initially (over the period of a week or so)
 During each process, gain levels are ranked as follows:
 
 * The range achievable by each gain level
-* The number of aircraft tracks with positions
+* The number of new aircraft tracks
 * The signal-to-noise ratio of the receiver
 
 The ranking process is done by sorting the gain levels for each statistic from worst to best, then awarding points. 0 points are awarded for the worst gain level, 1 point for the next gain level all the way up to several points for the best gain level (total number of points is the number of gain levels tested). The number of points for each gain level is totalled, and the optimal gain level is the level with the largest number of points. Any gain level with a percentage of "strong signals" outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` is discarded.
@@ -525,10 +525,6 @@ In the initialisation process:
 1. Gain level is lowered by one level.
 1. Gain levels are reviewed from lowest to highest gain level. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels above `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`, auto-gain lowers the maximum gain level.
 1. Gain levels are reviewed from highest to lowest gain level. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
-
-At this point, all of the tested gain levels are ranked based on the criterea discussed above.
-
-The gain level with the most points is taken, and the maximum and minimum gain levels used by the fine-tuning process are three levels above and below this level.
 
 Auto-gain then moves onto the fine-tuning stage.
 
@@ -566,7 +562,7 @@ All files for auto-gain are located at `/run/autogain` within the container. The
 | `/run/autogain/autogain_stats.pct_strong_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the percentage of strong signals for each gain level. Used for ranking. |
 | `/run/autogain/autogain_stats.total_accepted_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the total number of accepted messages for each gain level. |
 | `/run/autogain/autogain_stats.snr` | During initialisation and fine-tuning stages, this file will be used to collect the signal-to-noise ratio (SNR) for each gain level. Used for ranking. |
-| `/run/autogain/autogain_stats.tracks_with_position` | During initialisation and fine-tuning stages, this file will be used to collect the number of tracks with positions for each gain level. Used for ranking. |
+| `/run/autogain/autogain_stats.tracks_new` | During initialisation and fine-tuning stages, this file will be used to collect the number of new aircraft tracks for each gain level. Used for ranking. |
 | `/run/autogain/autogain_max_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
 | `/run/autogain/autogain_min_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
 | `/run/autogain/autogain_interval` | This file will contain the number of seconds for the current state's interval. |
@@ -577,7 +573,7 @@ After each stage has completed, the `/run/autogain/autogain_stats.*` files for t
 
 ### Forcing auto-gain to re-run from scrach
 
-Run `docker exec <container_name> rm /run/autogain/state` to remove the current state. Within 15 minutes or so, auto-gain will detect this and re-start at initialisation stage.
+Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Within 15 minutes or so, auto-gain will detect this and re-start at initialisation stage.
 
 ## Advanced Usage: Creating an MLAT Hub
 

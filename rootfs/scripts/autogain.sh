@@ -606,18 +606,21 @@ function autogain_finish_gainlevel_init() {
         # Inform user
         logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
 
-        # Try values sandwiching the best gain
-        best_gain_number=$(get_gain_number "$best_gain")
-        upper_gain_number=$((best_gain_number + 3))
-        lower_gain_number=$((best_gain_number - 3))
-        if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
-            upper_gain_number=$((${#gain_levels[@]}-1))
-        fi
-        if [[ $lower_gain_number -lt 0 ]]; then
-            lower_gain_number=0
-        fi
-        echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-        echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        # Block below commented out, as max & min gains should be set via adjust_minimum_gain_if_required/adjust_maximum_gain_if_required
+        #
+        # # Try values sandwiching the best gain
+        # best_gain_number=$(get_gain_number "$best_gain")
+        # upper_gain_number=$((best_gain_number + 3))
+        # lower_gain_number=$((best_gain_number - 3))
+        # if [[ $upper_gain_number -gt $((${#gain_levels[@]}-1)) ]]; then
+        #     upper_gain_number=$((${#gain_levels[@]}-1))
+        # fi
+        # if [[ $lower_gain_number -lt 0 ]]; then
+        #     lower_gain_number=0
+        # fi
+        # echo "${gain_levels[$upper_gain_number]}" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+        # echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        #
 
         # Store original stats files for later review
         archive_stats_files
@@ -664,8 +667,8 @@ function autogain_finish_gainlevel_finetune() {
         archive_stats_files
 
         # Initialise next stage
-        echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-        echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        # echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
+        # echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
         autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
     
     # otherwise, reduce gain if required
@@ -685,9 +688,15 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
     # If autogain is requested, but there is no state file, then initialise everything
     if [[ ! -e "$AUTOGAIN_STATE_FILE" ]]; then
 
-        # If there's no state, then initialise with the first state (2 hours)
-        echo "$AUTOGAIN_MAX_GAIN_VALUE" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
-        echo "$AUTOGAIN_MIN_GAIN_VALUE" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        # If there's no state, then start with the init state
+
+        # If max/min values don't exist from a previous run, set them based on env var
+        if [[ ! -e "$AUTOGAIN_MAX_GAIN_VALUE_FILE" ]]; then
+            echo "$AUTOGAIN_MAX_GAIN_VALUE" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+        fi
+        if [[ ! -e "$AUTOGAIN_MIN_GAIN_VALUE_FILE" ]]; then
+            echo "$AUTOGAIN_MIN_GAIN_VALUE" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
+        fi
         autogain_change_into_state init "$AUTOGAIN_INITIAL_PERIOD"
 
     elif [[ ! -e "$AUTOGAIN_RUNNING_FILE" ]]; then
