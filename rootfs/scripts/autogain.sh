@@ -666,6 +666,10 @@ function autogain_finish_gainlevel_finetune() {
         # Store original stats files for later review
         archive_stats_files
 
+        finish_date="$(date -I)"
+        mkdir "/run/autogain/$finish_date" > /dev/null 2>&1
+        cp /run/autogain/* "/run/autogain/$finish_date/" > /dev/null 2>&1
+
         # Initialise next stage
         # echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
         # echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
