@@ -49,6 +49,8 @@ AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE="/run/autogain/autogain_stats.pct_strong
 AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE="/run/autogain/autogain_stats.total_accepted_msgs"
 # best SNR (local_signal - local_noise)
 AUTOGAIN_STATS_SNR_FILE="/run/autogain/autogain_stats.snr"
+# number of tracks with position
+AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE="/run/autogain/autogain_stats.tracks_with_position"
 # update interval
 AUTOGAIN_INTERVAL_FILE="/run/autogain/autogain_interval"
 # results for init stage
@@ -85,9 +87,9 @@ function logger_debug() {
 
 function increase_review_timestamp() {
     logger_debug "Entering: increase_review_timestamp"
-    # Set review time 
+    # Set review time to now + 1 hour
     local new_timestamp
-    new_timestamp="$(($(date +%s) + $(cat "$AUTOGAIN_INTERVAL_FILE")))"
+    new_timestamp="$(($(date +%s) + 3600))"
     logger_debug "Setting review timestamp to: $new_timestamp"
     echo "$new_timestamp" > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
     logger_debug "Exiting: increase_review_timestamp"
@@ -200,6 +202,7 @@ function are_required_stats_available() {
     stats_used+=("total local_signal")
     stats_used+=("total local_noise")
     stats_used+=("total max_distance_in_metres")
+    stats_used+=("total tracks_with_position")
 
     for stat_used in "${stats_used[@]}"; do
 
@@ -229,6 +232,20 @@ function get_pct_strong_signals() {
     logger_debug "Percentage of strong signals: $pct_strong_signals"
     echo "$pct_strong_signals"
     logger_debug "Exiting: get_pct_strong_signals"
+}
+
+function get_tracks_with_position() {
+    # Return the number of tracks with position
+    # -----
+    logger_debug "Entering: get_tracks_with_position"
+    local tracks_with_position
+    if ! tracks_with_position=$(get_readsb_stat total tracks_with_position); then
+        logger_debug "No 'tracks_with_position' measurement! Setting to 0."
+        tracks_with_position=0
+    fi
+    logger_debug "tracks_with_position: $tracks_with_position"
+    echo "$tracks_with_position"
+    logger_debug "Exiting: tracks_with_position"
 }
 
 function get_snr() {
@@ -265,7 +282,18 @@ function rm_stats_files () {
     rm "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" > /dev/null 2>&1 || true
     rm "$AUTOGAIN_STATS_SNR_FILE" > /dev/null 2>&1 || true
+    rm "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" > /dev/null 2>&1 || true
     logger_debug "Exiting: rm_stats_files"
+}
+
+function archive_stats_files () {
+    logger_debug "Entering: archive_stats_files"
+    cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    cp "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+    logger_debug "Exiting: archive_stats_files"
 }
 
 function autogain_change_into_state () {
@@ -316,11 +344,11 @@ function autogain_change_into_state () {
     logger_debug "Exiting: autogain_change_into_state"
 }
 
-function gather_statistics () {
+function update_stats_files () {
     # Gather statistics from readsb into stats files
     # -----
 
-    logger_debug "Entering: gather_statistics"
+    logger_debug "Entering: update_stats_files"
 
     # Write statistics for this gain level
 
@@ -336,7 +364,10 @@ function gather_statistics () {
     # best SNR (local_signal - local_noise)
     echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_snr)" >> "$AUTOGAIN_STATS_SNR_FILE"
 
-    logger_debug "Exiting: gather_statistics"   
+    # number of tracks_with_position
+    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_tracks_with_position)" >> "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
+
+    logger_debug "Exiting: update_stats_files"   
 }
 
 function rank_gain_levels () {
@@ -352,83 +383,59 @@ function rank_gain_levels () {
         gain_rank[$gain_level]=0
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
-    # Find longest range
-    # +1 point for longest range (max_distance_in_metres)
-    # Only one point as this isn't always a reliable indicator
-    local max_value
-    local max_value_gain
-    max_value=0
-    max_value_gain=0
+    # Rank longest range and award points
+    sort -k2 -o "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
+    points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        bc_expression="$value > $max_value"
-        if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            max_value=$value
-            max_value_gain=$gain_level
-        fi
+        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        points=$((points + 1))
     done < "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
     gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
-    # -2 points for percentage strong messages less than AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN (local_strong_signals/local_samples_processed)
+    # -100 points for percentage strong messages less than AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN (local_strong_signals/local_samples_processed)
+    # -100 as we don't want to use them
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
         bc_expression="$value < $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN"
         if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            gain_rank[$gain_level]=$((gain_rank[$gain_level] - 1))
+            gain_rank[$gain_level]=$((gain_rank[$gain_level] - 100))
         fi
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
-    # -2 points for percentage strong messages greater than AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX (local_strong_signals/local_samples_processed)
+    # -100 points for percentage strong messages greater than AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX (local_strong_signals/local_samples_processed)
+    # -100 as we don't want to use them
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
         bc_expression="$value > $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX"
         if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            gain_rank[$gain_level]=$((gain_rank[$gain_level] - 1))
+            gain_rank[$gain_level]=$((gain_rank[$gain_level] - 100))
         fi
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
-    # +2 points for percentage strong messages between AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN & AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX (local_strong_signals/local_samples_processed)
-    while read -r line; do
-        gain_level=$(echo "$line" | cut -d ' ' -f 1)
-        value=$(echo "$line" | cut -d ' ' -f 2)
-        bc_expression="$value < $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX"
-        if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            bc_expression="$value > $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN"
-            if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-                gain_rank[$gain_level]=$((gain_rank[$gain_level] + 2))
-            fi
-        fi
-    done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
-    # +1 point for largest number of received messages (local_accepted)
-    # Only one point as this isn't always a reliable indicator
-    max_value=0
-    max_value_gain=0
+    # Rank best tracks_with_position
+    sort -k2 -o "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE" "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
+    points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        bc_expression="$value > $max_value"
-        if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            max_value="$value"
-            max_value_gain="$gain_level"
-        fi
-    done < "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE"
+        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        points=$((points + 1))
+    done < "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
     gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
-    # +2 point for best SNR (local_signal - local_noise)
-    max_value=0
-    max_value_gain=0
+    # Rank best SNR (local_signal - local_noise) and award points
+    sort -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
+    points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        bc_expression="$value > $max_value"
-        if [[ $(echo "$bc_expression" | bc -l) -eq 1 ]]; then
-            max_value=$value
-            max_value_gain=$gain_level
-        fi
+        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        points=$((points + 1))
     done < "$AUTOGAIN_STATS_SNR_FILE"
     gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
@@ -439,7 +446,7 @@ function rank_gain_levels () {
     sort -n "/tmp/.autogain_results" > "$AUTOGAIN_RESULTS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
     rm "/tmp/.autogain_results"
 
-    # Pick the best gain
+    # Pick the gain level with the most points
     local best_gain_level_points
     local best_gain_level_value
     best_gain_level_points=-100
@@ -573,7 +580,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 increase_review_timestamp
 
                                 # Gather statistics for the current gain level
-                                gather_statistics
+                                update_stats_files
 
                                 # Check to see if we should adjust the minimum gain
                                 adjust_minimum_gain_if_required
@@ -601,10 +608,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                     echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
 
                                     # Store original stats files for later review
-                                    cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    archive_stats_files
 
                                     # Initialise next stage
                                     autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
@@ -618,7 +622,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             increase_review_timestamp
 
                             # Gather statistics for the current gain level
-                            gather_statistics
+                            update_stats_files
 
                             # Check to see if we should adjust the minimum gain
                             adjust_minimum_gain_if_required
@@ -646,10 +650,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 echo "${gain_levels[$lower_gain_number]}" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
 
                                 # Store original stats files for later review
-                                cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                archive_stats_files
 
                                 # Initialise next stage
                                 autogain_change_into_state finetune "$AUTOGAIN_FINETUNE_PERIOD"
@@ -692,14 +693,14 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             # Set review time 
                             increase_review_timestamp
 
-                            # Limit number of retries to 24 hours
+                            # Limit number of retries to 2 days
                             if [[ "$(date +%s)" -gt "$((AUTOGAIN_CURRENT_TIMESTAMP_FILE + 172800))" ]]; then
 
                                 # Set review time 
                                 increase_review_timestamp
 
                                 # Gather statistics for the current gain level
-                                gather_statistics
+                                update_stats_files
 
                                 # Check to see if we should adjust the minimum gain
                                 adjust_minimum_gain_if_required
@@ -717,10 +718,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                     set_readsb_gain "$best_gain"
                                     
                                     # Store original stats files for later review
-                                    cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                    cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                    archive_stats_files
 
                                     # Initialise next stage
                                     echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
@@ -737,7 +735,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             increase_review_timestamp
 
                             # Gather statistics for the current gain level
-                            gather_statistics
+                            update_stats_files
 
                             # Check to see if we should adjust the minimum gain
                             adjust_minimum_gain_if_required
@@ -755,10 +753,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                                 set_readsb_gain "$best_gain"
 
                                 # Store original stats files for later review
-                                cp "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE" "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
-                                cp "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE.$(cat "$AUTOGAIN_STATE_FILE")"
+                                archive_stats_files
                                 
                                 # Initialise next stage
                                 echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"

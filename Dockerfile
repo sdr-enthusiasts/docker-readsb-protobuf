@@ -28,17 +28,17 @@ ENV BRANCH_RTLSDR="d794155ba65796a76cd0a436f9709f4601509320" \
     # The timestamp (seconds since epoch) when the current gain figure should be reviewed
     AUTOGAIN_REVIEW_TIMESTAMP_FILE="/run/autogain/autogain_review_timestamp" \
     # The maximum allowable percentage of strong messages
-    AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX=5.0 \
+    AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX=10.0 \
     # The minimum allowable percentage of strong messages
-    AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN=1.0 \
+    AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN=0.5 \
     # The number of seconds that autogain "init" stage should run for, for each gain level
     AUTOGAIN_INITIAL_PERIOD=7200 \
     # The minimum number of local_accepted messages that autogain "init" stage should run for, for each gain level
-    AUTOGAIN_INITIAL_MSGS_ACCEPTED=500000 \
+    AUTOGAIN_INITIAL_MSGS_ACCEPTED=1000000 \
     # The number of seconds that autogain "finetune" stage should run for, for each gain level
-    AUTOGAIN_FINETUNE_PERIOD=86400 \
+    AUTOGAIN_FINETUNE_PERIOD=604800 \
     # The minimum number of local_accepted messages that autogain "finetune" stage should run for, for each gain level
-    AUTOGAIN_FINETUNE_MSGS_ACCEPTED=1000000 \
+    AUTOGAIN_FINETUNE_MSGS_ACCEPTED=10000000 \
     # How long to run once finetune stage has finished before we start the process over (1 year)
     AUTOGAIN_FINISHED_PERIOD=31536000 \
     # Maximum gain level that autogain should use

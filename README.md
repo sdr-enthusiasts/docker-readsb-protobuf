@@ -446,15 +446,14 @@ These variables control the auto-gain system (explained further below). These sh
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `AUTOGAIN_INITIAL_PERIOD` | How long each gain level should be measured during auto-gain initialisation (ie: "roughing in"), in seconds. | `7200` (2 hours) |
-| `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain initialisaion to ensure accurate measurement. | `500000` |
-| `AUTOGAIN_FINETUNE_PERIOD` | How long each gain level should be measured during auto-gain fine-tuning, in seconds. | `86400` (24 hours) |
-| `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain fine-tuning to ensure accurate measurement. | `1000000` |
+| `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain initialisaion to ensure accurate measurement. | `1000000` |
+| `AUTOGAIN_FINETUNE_PERIOD` | How long each gain level should be measured during auto-gain fine-tuning, in seconds. | `604800` (7 days) |
+| `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` | How many locally accepted messages should be received per gain level during auto-gain fine-tuning to ensure accurate measurement. | `10000000` |
 | `AUTOGAIN_FINISHED_PERIOD` | How long between the completion of fine-tuning (and ultimetly setting a preferred gain), and re-running the entire process. | `31536000` (1 year) |
 | `AUTOGAIN_MAX_GAIN_VALUE` | The maximum gain setting in dB that will be used by auto-gain. | `49.6` (max supported by `readsb`) |
 | `AUTOGAIN_MIN_GAIN_VALUE` | The minimum gain setting in dB that will be used by auto-gain. | `0.0` (min supported by `readsb`) |
-| `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` | The maximum percentage of "strong messages" auto-gain will aim for. | `5.0` |
-| `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` | The minimum percentage of "strong messages" auto-gain will aim for. | `1.0` |
-| `AUTOGAIN_INITIAL_MSGS_ACCEPTED` | The minimum number of successfully accepted messages per gain level measured. | `500000` |
+| `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` | The maximum percentage of "strong messages" auto-gain will aim for. | `10.0` |
+| `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` | The minimum percentage of "strong messages" auto-gain will aim for. | `0.5` |
 | `AUTOGAIN_SERVICE_PERIOD` | How often the auto-gain system will check results and perform actions, in seconds | `900` |
 
 ### InfluxDB Options
@@ -500,6 +499,8 @@ Some common ports are as follows (which may or may not be in use depending on yo
 
 An automatic gain adjustment system is included in this container, and can be activated by setting the environment variable `READSB_GAIN` to `autogain`. You should also map `/run/autogain` to persistant storage, otherwise the auto-gain system will start over each time the container is restarted.
 
+*Why is this written in bash?* Because I wanted to keep the container size down and not have to install an interpreter like python. I don't know C or Perl or many other languages.
+
 The auto-gain system will work as follows:
 
 ### Initialisation Stage
@@ -508,21 +509,18 @@ In the initialisation process:
 
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
 1. Results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
-1. Check to ensure at least `AUTOGAIN_INITIAL_MSGS_ACCEPTED` messages have been locally accepted (500,000 by default). If not, contine collecting data in periods of `AUTOGAIN_INITIAL_PERIOD` for up to 24 hours.
-1. Gain level is lowered by one level.
-1. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
+2. Check to ensure at least `AUTOGAIN_INITIAL_MSGS_ACCEPTED` messages have been locally accepted (1,000,000 by default). If not, contine collecting data for up to 24 hours. This combination of time and number of messages ensures we have enough data to make a valid initial assessment of each gain level.
+3. Gain level is lowered by one level.
+4. If there have been gain levels resulting in a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, and there have been two consecutive gain levels below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`, auto-gain discontinues testing gain levels.
 
-At this point, all of the tested gain levels are ranked, using the following methodology:
+At this point, all of the tested gain levels are ranked based on a combination of the following:
 
-* All tested gain levels start with 0 points
-* +2 points are awarded for a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`
-* +2 points are awarded for the best signal-to-noise ratio (SNR)
-* +1 point is awarded for the longest range (only one point as this isn't always a reliable indicator)
-* +1 point is awarded for the largest number of received messages (only one point as this isn't always a reliable indicator)
-* -2 points are deducted for a percentage of strong messages below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`
-* -2 points are deducted for a percentage of strong messages above `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`
+* Longest range
+* Number of tracks with position
+* Signal-to-Noise ratio
+* Any gain levels outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` are discarded
 
-The gain level with the most points is taken, and the maximum and minimum gain levels used by the fine-tuning process are two levels above and below this level.
+The gain level with the most points is taken, and the maximum and minimum gain levels used by the fine-tuning process are three levels above and below this level.
 
 Auto-gain then moves onto the fine-tuning stage.
 
@@ -531,19 +529,16 @@ Auto-gain then moves onto the fine-tuning stage.
 In the fine-tuning process:
 
 1. `readsb` is set to maximum gain level chosen at the end of the initialisation process.
-1. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (24 hours by default).
-1. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (1,000,000 by default). If not, contine collecting data in periods of `AUTOGAIN_FINETUNE_PERIOD` for up to 48 hours.
-1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
+2. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (7 days by default).
+3. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (10,000,000 by default). If not, contine collecting data for up to 48 hours. This combination of time and number of messages ensures we have enough data to make an accurate assessment of each gain level, and by using 7 days this ensures any peaks/troughs in data due to quiet/busy days of the week do not skew results.
+4. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
 
-At this point, all of the tested gain levels are ranked, using the following methodology:
+At this point, all of the tested gain levels are ranked based on a combination of the following:
 
-* All tested gain levels start with 0 points
-* +2 points are awarded for a percentage of strong messages between `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`
-* +2 points are awarded for the best signal-to-noise ratio (SNR)
-* +1 point is awarded for the longest range (only one point as this isn't always a reliable indicator)
-* +1 point is awarded for the largest number of received messages (only one point as this isn't always a reliable indicator)
-* -2 points are deducted for a percentage of strong messages below `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN`
-* -2 points are deducted for a percentage of strong messages above `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX`
+* Longest range
+* Number of tracks with position
+* Signal-to-Noise ratio
+* Any gain levels outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` are discarded
 
 The gain level with the most points is chosen, and `readsb` is set to this gain level.
 
@@ -566,13 +561,16 @@ All files for auto-gain are located at `/run/autogain` within the container. The
 | `/run/autogain/autogain_log` | The log file for auto-gain. Contains verbose/debug entries not normally written to the container log. |
 | `/run/autogain/autogain_stats.max_distance` | During initialisation and fine-tuning stages, this file will be used to collect the maximum distance for each gain level. Used for ranking. |
 | `/run/autogain/autogain_stats.pct_strong_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the percentage of strong signals for each gain level. Used for ranking. |
-| `/run/autogain/autogain_stats.total_accepted_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the total number of accepted messages for each gain level. Used for ranking. |
+| `/run/autogain/autogain_stats.total_accepted_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the total number of accepted messages for each gain level. |
 | `/run/autogain/autogain_stats.snr` | During initialisation and fine-tuning stages, this file will be used to collect the signal-to-noise ratio (SNR) for each gain level. Used for ranking. |
+| `/run/autogain/autogain_stats.tracks_with_position` | During initialisation and fine-tuning stages, this file will be used to collect the number of tracks with positions for each gain level. Used for ranking. |
 | `/run/autogain/autogain_max_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
 | `/run/autogain/autogain_min_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
 | `/run/autogain/autogain_interval` | This file will contain the number of seconds for the current state's interval. |
 | `/run/autogain/autogain_results.init` | The results (gain rankings) as a result of the initialisation process. |
 | `/run/autogain/autogain_results.finetune` | The results (gain rankings) as a result of the fine-tuning process. |
+
+After each stage has completed, the `/run/autogain/autogain_stats.*` files for that stage are moved to `/run/autogain/autogain_stats.*.<stage>`.
 
 ### Forcing auto-gain to re-run from scrach
 
