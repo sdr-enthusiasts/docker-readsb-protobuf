@@ -11,6 +11,8 @@
 #         "0800;2000;Mon-Fri" would:
 #           - start collection at 8am Mon-Fri
 #           - stop collection at 8pm Mon-Fri
+#    Would need to ensure that results hold over if not completed within this
+#    window, otherwise we may never finish a level...
 
 # If troubleshooting:
 if [[ -n "$DEBUG_LOGGING" ]]; then
