@@ -783,7 +783,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                 fi
                 ;;
 
-            finished)
+            finish)
 
                 logger_debug "In finished state"
 
