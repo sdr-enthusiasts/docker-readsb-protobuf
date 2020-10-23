@@ -400,7 +400,7 @@ function rank_gain_levels () {
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
     # Rank longest range and award points
-    sort -k2 -o "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
+    sort -n -k2 -o "$AUTOGAIN_STATS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
     points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
@@ -433,7 +433,7 @@ function rank_gain_levels () {
 
 
     # Rank best tracks_new
-    sort -k2 -o "$AUTOGAIN_STATS_TRACKS_NEW_FILE" "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
+    sort -n -k2 -o "$AUTOGAIN_STATS_TRACKS_NEW_FILE" "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
     points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
@@ -443,7 +443,7 @@ function rank_gain_levels () {
     done < "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
 
     # Rank best SNR (local_signal - local_noise) and award points
-    sort -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
+    sort -n -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
     points=0
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
@@ -521,6 +521,56 @@ function adjust_minimum_gain_if_required() {
     logger_debug "Exiting: adjust_minimum_gain_if_required"
 }
 
+function adjust_maximum_gain_if_required() {
+
+    # Check to see whether we need to adjust minimum gain level
+    # -----
+    logger_debug "Entering: adjust_maximum_gain_if_required"
+
+    # Prepare local variables
+    local count_above_max
+    count_above_max=0
+    # re-order file with lowest gain at first line
+    sort -n -o "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
+    # For each line in the AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE...
+    while read -r line; do
+        # Get gain level and percentage of strong messages
+        gain_level=$(echo "$line" | cut -d ' ' -f 1)
+        pct_strong_msgs=$(echo "$line" | cut -d ' ' -f 2)
+        # Look for gain levels that have a suitable percentage of strong messages
+        bc_expression="$pct_strong_msgs >= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN"
+        if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+            bc_expression="$pct_strong_msgs <= $AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX"
+            if [[ "$(echo "$bc_expression" | bc -l)" -eq 1 ]]; then
+                # Gain levels in this block are "good" (within min/max percent of strong messages)
+                count_above_max=0
+                logger_debug "adjust_maximum_gain_if_required: Found 'good' amount of strong messages at gain level $gain_level dB"
+            else
+                # Gain levels in this block are above max strong messages
+                count_above_max=$((count_above_max + 1))
+                logger_debug "adjust_maximum_gain_if_required: Consecutive amove maximum % strong messages: $count_above_max"
+                if [[ "$count_above_max" -eq "2" ]]; then
+                    max_gain_value="$gain_level"
+                fi
+            fi
+        else
+            # Gain levels in this block are above max strong messages
+            count_above_max=0
+            logger_debug "adjust_maximum_gain_if_required: Found gain level with % strong messages below min at gain level $gain_level dB"
+        fi                            
+    done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
+    # Put order of the file back to normal
+    sort -n -r -o "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
+
+    # If we've seen two consecutive "above maximums" after the "good" region, we've most likely gone past the "good" region.
+    # Lower the maximum gain
+    if [[ "$count_above_max" -gt "2" ]]; then
+        logger_verbose "Lowering maximum gain level to: $(cat "$max_gain_value") dB"
+        echo "$max_gain_value" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
+    fi
+    logger_debug "Exiting: adjust_maximum_gain_if_required"
+}
+
 function is_current_gain_min_gain() {
     logger_debug "Entering: is_current_gain_min_gain"
     bc_expression="$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") <= $(cat "$AUTOGAIN_MIN_GAIN_VALUE_FILE")"
@@ -543,8 +593,9 @@ function autogain_finish_gainlevel_init() {
     # Gather statistics for the current gain level
     update_stats_files
 
-    # Check to see if we should adjust the minimum gain
+    # Check to see if we should adjust the minimum/maximum gain levels
     adjust_minimum_gain_if_required
+    adjust_maximum_gain_if_required
 
     # If current gain is at the minimum gain, then we're done with this stage
     if is_current_gain_min_gain; then
@@ -593,8 +644,9 @@ function autogain_finish_gainlevel_finetune() {
     # Gather statistics for the current gain level
     update_stats_files
 
-    # Check to see if we should adjust the minimum gain
+    # Check to see if we should adjust the minimum/maximum gain levels
     adjust_minimum_gain_if_required
+    adjust_maximum_gain_if_required
 
     # If current gain is at the minimum gain, then we're done with this stage
     if is_current_gain_min_gain; then
