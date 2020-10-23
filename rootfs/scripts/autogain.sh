@@ -389,10 +389,9 @@ function rank_gain_levels () {
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        gain_rank[$gain_level]=$((gain_rank[$gain_level] + points))
         points=$((points + 1))
     done < "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
-    gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
     # -100 points for percentage strong messages less than AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN (local_strong_signals/local_samples_processed)
     # -100 as we don't want to use them
@@ -423,10 +422,9 @@ function rank_gain_levels () {
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        gain_rank[$gain_level]=$((gain_rank[$gain_level] + points))
         points=$((points + 1))
     done < "$AUTOGAIN_STATS_TRACKS_WITH_POSITION_FILE"
-    gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
     # Rank best SNR (local_signal - local_noise) and award points
     sort -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
@@ -434,10 +432,9 @@ function rank_gain_levels () {
     while read -r line; do
         gain_level=$(echo "$line" | cut -d ' ' -f 1)
         value=$(echo "$line" | cut -d ' ' -f 2)
-        gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + points))
+        gain_rank[$gain_level]=$((gain_rank[$gain_level] + points))
         points=$((points + 1))
     done < "$AUTOGAIN_STATS_SNR_FILE"
-    gain_rank[$max_value_gain]=$((gain_rank[$max_value_gain] + 1))
 
     # Write out results file
     for gain_level in "${!gain_rank[@]}"; do
@@ -449,7 +446,7 @@ function rank_gain_levels () {
     # Pick the gain level with the most points
     local best_gain_level_points
     local best_gain_level_value
-    best_gain_level_points=-100
+    best_gain_level_points=-1000
     best_gain_level_value=0
     while read -r line; do
         gain_level_points=$(echo "$line" | cut -d ':' -f 2)
