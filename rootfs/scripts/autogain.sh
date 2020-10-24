@@ -548,7 +548,7 @@ function adjust_maximum_gain_if_required() {
             else
                 # Gain levels in this block are above max strong messages
                 count_above_max=$((count_above_max + 1))
-                logger_debug "adjust_maximum_gain_if_required: Consecutive amove maximum % strong messages: $count_above_max"
+                logger_debug "adjust_maximum_gain_if_required: Consecutive above maximum % strong messages: $count_above_max"
                 if [[ "$count_above_max" -eq "2" ]]; then
                     max_gain_value="$gain_level"
                 fi
