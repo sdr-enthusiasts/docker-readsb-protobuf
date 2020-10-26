@@ -431,17 +431,6 @@ function rank_gain_levels () {
         fi
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
 
-
-    # Rank best tracks_new
-    sort -n -k2 -o "$AUTOGAIN_STATS_TRACKS_NEW_FILE" "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
-    points=0
-    while read -r line; do
-        gain_level=$(echo "$line" | cut -d ' ' -f 1)
-        value=$(echo "$line" | cut -d ' ' -f 2)
-        gain_rank[$gain_level]=$((gain_rank[$gain_level] + points))
-        points=$((points + 1))
-    done < "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
-
     # Rank best SNR (local_signal - local_noise) and award points
     sort -n -k2 -o "$AUTOGAIN_STATS_SNR_FILE" "$AUTOGAIN_STATS_SNR_FILE"
     points=0
