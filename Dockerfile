@@ -272,3 +272,5 @@ ENTRYPOINT [ "/init" ]
 HEALTHCHECK --start-period=300s --interval=300s CMD /scripts/healthcheck.sh
 
 # This container can't be rootless - readsb can't talk to RTLSDR if USER is set :-(
+
+# TODO: disable biastee on container stop (if biastee enabled)
