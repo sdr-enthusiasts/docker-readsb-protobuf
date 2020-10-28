@@ -369,7 +369,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 
 | Variable | Description | Controls which `readsb` option | Default |
 |----------|-------------|--------------------------------|---------|
-| `READSB_RTLSDR_DEVICE` | Select device by index or serial number. | `--device=<index or serial>` | Unset |
+| `READSB_RTLSDR_DEVICE` | Select device by serial number. | `--device=<serial>` | Unset |
 | `READSB_RTLSDR_ENABLE_AGC` | Set this to any value to enable digital AGC (not tuner AGC!) | `--enable-agc` | Unset |
 | `READSB_RTLSDR_PPM` | Set oscillator frequency correction in PPM | `--ppm=<correction>` | Unset |
 
@@ -506,7 +506,6 @@ Auto-gain will take several weeks to initially (over the period of a week or so)
 During each process, gain levels are ranked as follows:
 
 * The range achievable by each gain level
-* The number of new aircraft tracks
 * The signal-to-noise ratio of the receiver
 
 The ranking process is done by sorting the gain levels for each statistic from worst to best, then awarding points. 0 points are awarded for the worst gain level, 1 point for the next gain level all the way up to several points for the best gain level (total number of points is the number of gain levels tested). The number of points for each gain level is totalled, and the optimal gain level is the level with the largest number of points. Any gain level with a percentage of "strong signals" outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` is discarded.
