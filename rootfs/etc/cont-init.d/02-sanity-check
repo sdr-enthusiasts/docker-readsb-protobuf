@@ -9,7 +9,6 @@ EXITCODE=0
 # If troubleshooting:
 if [[ -n "$DEBUG_LOGGING" ]]; then
     set -x
-    VERBOSE_LOGGING=true
 fi
 
 # Check that if more than one rtlsdr, that we have a serial given

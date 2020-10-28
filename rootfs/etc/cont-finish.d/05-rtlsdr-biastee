@@ -4,7 +4,6 @@
 # If troubleshooting:
 if [[ -n "$DEBUG_LOGGING" ]]; then
     set -x
-    VERBOSE_LOGGING=true
 fi
 
 if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
@@ -33,6 +32,7 @@ if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
 
                         if [[ "$device_serial" == "$READSB_RTLSDR_DEVICE" ]]; then
                             echo "Disabling bias tee for device $device_id:  $device_manufacturer, $device_model, SN: $device_serial"
+                            # shellcheck disable=SC2016
                             rtl_biast -d "$device_id" -b 0 2>&1 | stdbuf -o0 awk '{print "[rtl_biast] " $0}'
                         fi
                     fi
@@ -40,6 +40,7 @@ if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
             fi
         else
             echo "Disabling bias tee..."
+            # shellcheck disable=SC2016
             rtl_biast -b 0 2>&1 | stdbuf -o0 awk '{print "[rtl_biast] " $0}'
         fi
         rm "$biast_tempfile"
