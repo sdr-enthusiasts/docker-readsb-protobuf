@@ -11,7 +11,24 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 docker buildx use homecluster
 
 # Build & push latest
-docker buildx build --no-cache -t "${REPO}/${IMAGE}:${LATEST_TAG}" --compress --push --platform "${PLATFORMS}" .
+EXITCODE=1
+FIRSTRUN=1
+TRIES=1
+while [[ "$EXITCODE" -ne 0 ]]; do
+    echo "Attempting build, try $TRIES"
+    if [[ "$FIRSTRUN" -eq 1 ]]; then
+        docker buildx build --no-cache -t "${REPO}/${IMAGE}:${LATEST_TAG}" --compress --push --platform "${PLATFORMS}" .
+        EXITCODE="$?"
+        FIRSTRUN=0
+    else
+        docker buildx build -t "${REPO}/${IMAGE}:${LATEST_TAG}" --compress --push --platform "${PLATFORMS}" .
+        EXITCODE="$?"
+    fi
+    TRIES=$((TRIES+1))
+    if [[ "$TRIES" -ge 5 ]]; then
+        exit 1
+    fi
+done
 
 # Get readsb version from latest
 docker pull "${REPO}/${IMAGE}:${LATEST_TAG}"
