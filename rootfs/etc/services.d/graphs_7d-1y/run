@@ -32,7 +32,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
             #shellcheck disable=SC2016
             echo "Refreshing $1 graphs" | stdbuf -o0 awk '{print "[graphs] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
         fi
-        s6-setuidgid readsb ./graphs.sh "$1" > /dev/null 2>&1
+        ./graphs.sh "$1" > /dev/null 2>&1
     }
 
     # Wait 30 minutes

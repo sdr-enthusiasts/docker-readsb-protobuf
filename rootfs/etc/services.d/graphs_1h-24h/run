@@ -32,7 +32,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
             #shellcheck disable=SC2016
             echo "Refreshing $1 graphs" | stdbuf -o0 awk '{print "[graphs] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
         fi
-        s6-setuidgid readsb ./graphs.sh "$1" > /dev/null 2>&1
+        ./graphs.sh "$1" > /dev/null 2>&1
     }
 
     # Wait a minute
@@ -63,7 +63,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
     else
         #shellcheck disable=SC2016
         echo "Initialising graphs" | stdbuf -o0 awk '{print "[graphs] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
-        s6-setuidgid readsb ./boot.sh > /dev/null 2>&1
+        ./boot.sh > /dev/null 2>&1
         touch "/tmp/.next_graphs_1h"
         touch "/tmp/.next_graphs_7d"
 
