@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-#shellcheck shell=sh
+#!/usr/bin/env bash
+#shellcheck shell=bash
 
 REPO=mikenye
 IMAGE=readsb-protobuf
