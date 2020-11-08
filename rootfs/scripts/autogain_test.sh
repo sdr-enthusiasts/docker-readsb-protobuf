@@ -67,6 +67,7 @@ echo -e "${LIGHTBLUE}==== SETTING UP TEST ENVIRONMENT ====${NOCOLOR}"
 READSB_GAIN="autogain"
 export READSB_GAIN
 echo "49.6" > "$AUTOGAIN_CURRENT_VALUE_FILE"
+RUNCOUNT=0
 
 # prepare testing timestamp variable
 AUTOGAIN_TESTING_TIMESTAMP=$(date +%s)
@@ -79,6 +80,14 @@ while true; do
     for testdatafile in /autogain_test_data/*.pb.*; do
 
         echo -e "${LIGHTBLUE}==== TESTING TIMESTAMP $AUTOGAIN_TESTING_TIMESTAMP ====${NOCOLOR}"
+        echo -n "$(cat /run/autogain/autogain_current_timestamp 2> /dev/null) "
+        echo -n "$(cat /run/autogain/autogain_current_value 2> /dev/null) "
+        echo -n "$(cat /run/autogain/autogain_max_value 2> /dev/null) "
+        echo -n "$(cat /run/autogain/autogain_min_value 2> /dev/null) "
+        echo -n "$(cat /run/autogain/autogain_review_timestamp 2> /dev/null) "
+        echo -n "$(cat /run/autogain/autogain_review_timestamp 2> /dev/null) "
+        echo -n "$(cat /run/autogain/state 2> /dev/null) "
+        echo ""
 
         rm /tmp/test_* > /dev/null 2>&1 || true
 
@@ -133,12 +142,24 @@ while true; do
             echo ""
         fi
 
+        # If we're here, tests passed
         echo -e "${LIGHTGREEN}PASS${NOCOLOR}"
+        echo ""
 
         # advance clock
-        AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 900))
+        if [[ "$AUTOGAIN_STATE_FILE" == "finished" ]]; then
+            RUNCOUNT=$((RUNCOUNT + 1))
+            AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 86400))
+        then
+            AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 900))
+        fi
 
-        echo ""
+        if [[ "$RUNCOUNT" -ge "3" ]]; then
+            echo ""
+            echo -e "${LIGHTGREEN}Simulated $RUNCOUNT full runs. All tests passed.${NOCOLOR}"
+            echo ""
+            exit 0
+        fi
 
     done
 
