@@ -294,14 +294,15 @@ function get_local_strong_signals() {
     logger_debug "Entering: get_local_strong_signals"
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE" ]]; then
-        bc_expression="scale=4; $(get_readsb_stat total local_strong_signals) + $(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE")"
+        local_strong_signals="$(get_readsb_stat total local_strong_signals)"
+        bc_expression="scale=4; ${local_strong_signals:-0} + $(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE")"
         local_strong_signals=$(echo "$bc_expression" | bc)
     else
         local_strong_signals="$(get_readsb_stat total local_strong_signals)"
     fi
 
-    logger_debug "local_strong_signals: $local_strong_signals"
-    echo "$local_strong_signals"
+    logger_debug "local_strong_signals: ${local_strong_signals:-0}"
+    echo "${local_strong_signals:-0}"
 
     logger_debug "Exiting: get_local_strong_signals"
 }
