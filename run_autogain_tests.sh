@@ -9,4 +9,4 @@ docker build -t readsb_autogain_testing_base .
 docker build -f Dockerfile.autogain_testing -t readsb_autogain_testing .
 
 # Run autogain tests
-docker run --rm -it readsb_autogain_testing
+docker run --rm -it --no-healthcheck readsb_autogain_testing
