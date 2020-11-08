@@ -2,7 +2,7 @@
 
 [Mictronics' `readsb-protobuf`](https://github.com/Mictronics/readsb-protobuf) Mode-S/ADSB/TIS decoder for RTLSDR, BladeRF, Modes-Beast and GNS5894 devices, running in a docker container.
 
-This version uses Googles protocol buffer for data storage and exchange with web application. Saves on storage space and bandwidth.
+This version uses Google's protocol buffer for data storage and exchange with web application. Saves on storage space and bandwidth.
 
 This container also contains InfluxData's [Telegraf](https://docs.influxdata.com/telegraf/), and can send flight data and `readsb` metrics to InfluxDB (if wanted - not started by default).
 
@@ -11,6 +11,7 @@ Support for all supported SDRs is compiled in. Builds and runs on x86_64, arm32v
 This image will configure a software-defined radio (SDR) to receive and decode Mode-S/ADSB/TIS data from aircraft within range, for use with other services such as:
 
 * `mikenye/adsbexchange` to feed ADSB data to [adsbexchange.com](https://adsbexchange.com)
+* `mikenye/adsbhub` to feed ADSB data into [adsbhub.org](https://adsbhub.org/)
 * `mikenye/piaware` to feed ADSB data into [flightaware.com](https://flightaware.com)
 * `mikenye/fr24feed` to feed ADSB data into [flightradar24.com](https://www.flightradar24.com)
 * `mikenye/radarbox` to feed ADSB data into [radarbox.com](https://www.radarbox.com)
@@ -135,7 +136,7 @@ docker run \
  --restart=always \
  --name readsb \
  --hostname readsb \
- --device /dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER \
+ --device /dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER:/dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER \
  -p 8080:8080 \
  -p 30005:30005 \
  -e TZ=<YOUR_TIMEZONE> \
@@ -163,7 +164,7 @@ docker run \
  --restart=always \
  --name readsb \
  --hostname readsb \
- --device /dev/bus/usb/001/004 \
+ --device /dev/bus/usb/001/004:/dev/bus/usb/001/004 \
  -p 8080:8080 \
  -p 30005:30005 \
  -e TZ=Australia/Perth \
@@ -182,7 +183,7 @@ docker run \
  mikenye/readsb-protobuf
 ```
 
-Alternatively, you could pass through the entire USB bus with `--device /dev/bus/usb`, but please understand the security implications of doing so.
+Alternatively, you could pass through the entire USB bus with `--device /dev/bus/usb:/dev/bus/usb`, but please understand the security implications of doing so.
 
 ## Up-and-Running with Docker Compose
 
@@ -550,29 +551,9 @@ In the finished stage, auto-gain does nothing (as `readsb` is operating at optim
 
 All files for auto-gain are located at `/run/autogain` within the container. They should not be modified by hand.
 
-| File | Description |
-|------|-------------|
-| `/run/autogain/state` | The current state of the auto-gain system (`init`,`finetune`,`finish`). |
-| `/run/autogain/autogain_current_value` | The current gain setting, as set by the auto-gain system. |
-| `/run/autogain/autogain_current_timestamp` | The timestamp (seconds since epoch) when the current gain was set. |
-| `/run/autogain/autogain_review_timestamp` | The timestamp (seconds since epoch) when the current gain level will be reviewed by auto-gain. |
-| `/run/autogain/autogain_log` | The log file for auto-gain. Contains verbose/debug entries not normally written to the container log. |
-| `/run/autogain/autogain_stats.max_distance` | During initialisation and fine-tuning stages, this file will be used to collect the maximum distance for each gain level. Used for ranking. |
-| `/run/autogain/autogain_stats.pct_strong_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the percentage of strong signals for each gain level. Used for ranking. |
-| `/run/autogain/autogain_stats.total_accepted_msgs` | During initialisation and fine-tuning stages, this file will be used to collect the total number of accepted messages for each gain level. |
-| `/run/autogain/autogain_stats.snr` | During initialisation and fine-tuning stages, this file will be used to collect the signal-to-noise ratio (SNR) for each gain level. Used for ranking. |
-| `/run/autogain/autogain_stats.tracks_new` | During initialisation and fine-tuning stages, this file will be used to collect the number of new aircraft tracks for each gain level. Used for ranking. |
-| `/run/autogain/autogain_max_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
-| `/run/autogain/autogain_min_value` | During initialisation and fine-tuning stages, this file will be used to set the maximum gain value tested. |
-| `/run/autogain/autogain_interval` | This file will contain the number of seconds for the current state's interval. |
-| `/run/autogain/autogain_results.init` | The results (gain rankings) as a result of the initialisation process. |
-| `/run/autogain/autogain_results.finetune` | The results (gain rankings) as a result of the fine-tuning process. |
-
-After each stage has completed, the `/run/autogain/autogain_stats.*` files for that stage are moved to `/run/autogain/autogain_stats.*.<stage>`.
-
 ### Forcing auto-gain to re-run from scrach
 
-Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Within 15 minutes or so, auto-gain will detect this and re-start at initialisation stage.
+Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Restart the container and auto-gain will detect this and re-start at initialisation stage.
 
 ## Advanced Usage: Creating an MLAT Hub
 
