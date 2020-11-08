@@ -57,6 +57,9 @@ for i in "${gain_levels[@]}"; do
     ALLOWED_STDERR+=("Container restart detected, resuming auto-gain state 'init' with gain $i dB")
 done
 ALLOWED_STDERR+=("Entering auto-gain stage: init")
+ALLOWED_STDERR+=("Entering auto-gain stage: finetune")
+ALLOWED_STDERR+=("Entering auto-gain stage: finished")
+
 
 set -eo pipefail
 
