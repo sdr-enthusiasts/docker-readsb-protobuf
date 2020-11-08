@@ -150,7 +150,7 @@ while true; do
         if [[ "$AUTOGAIN_STATE_FILE" == "finished" ]]; then
             RUNCOUNT=$((RUNCOUNT + 1))
             AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 86400))
-        then
+        else
             AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 900))
         fi
 
