@@ -1054,7 +1054,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                             increase_review_timestamp
 
                             # Limit number of retries to 2 days
-                            if [[ "$(get_current_timestamp)" -gt "$((AUTOGAIN_CURRENT_TIMESTAMP_FILE + 172800))" ]]; then
+                            if [[ "$(get_current_timestamp)" -gt "$(($(cat $AUTOGAIN_CURRENT_TIMESTAMP_FILE) + 172800))" ]]; then
 
                                 # Finish finetune state
                                 autogain_finish_gainlevel_finetune
