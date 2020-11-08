@@ -98,6 +98,13 @@ while true; do
         if bash -xeo pipefail /scripts/autogain.sh > /tmp/test_stdout 2> /tmp/test_stderr; then
             :
         else
+            echo ""
+            echo -e "${LIGHTRED}==== FULL STDERR ====${NOCOLOR}"
+            # shellcheck disable=SC2094
+            cat /tmp/test_stderr
+            echo ""
+            echo -e "${LIGHTRED}=====================${NOCOLOR}"
+            echo ""
             echo -e "${LIGHTRED}FAIL - non zero exit code${NOCOLOR}"
             exit 1
         fi
