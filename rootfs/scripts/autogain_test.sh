@@ -95,7 +95,7 @@ while true; do
         cp "$testdatafile" "$READSB_STATS_PB_FILE" > /dev/null
 
         # run test
-        if bash -xeo pipefail /scripts/autogain.sh > /tmp/test_stdout 2> /tmp/test_stderr; then
+        if bash -xo pipefail /scripts/autogain.sh > /tmp/test_stdout 2> /tmp/test_stderr; then
             :
         else
             echo ""
