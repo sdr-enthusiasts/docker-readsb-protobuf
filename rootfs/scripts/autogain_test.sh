@@ -165,7 +165,7 @@ while true; do
         echo ""
 
         # advance clock
-        if [[ "$AUTOGAIN_STATE_FILE" == "finished" ]]; then
+        if [[ "$(cat $AUTOGAIN_STATE_FILE)" == "finished" ]]; then
             RUNCOUNT=$((RUNCOUNT + 1))
             AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 86400))
         else
