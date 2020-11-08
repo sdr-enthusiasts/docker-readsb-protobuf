@@ -1085,7 +1085,11 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                     # re-run autogain process
                     rm "$AUTOGAIN_STATE_FILE"
                 fi
-                sleep 86400
+
+                # sleep for a day (unless testing)
+                if [[ -z "$AUTOGAIN_TESTING_TIMESTAMP" ]]; then
+                    sleep 86400
+                fi
                 ;;
 
             *)
