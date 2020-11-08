@@ -119,7 +119,7 @@ function get_current_timestamp() {
     #-----
     logger_debug "Entering: get_current_timestamp"
     if [[ -z "$AUTOGAIN_TESTING_TIMESTAMP" ]]; then
-        echo "$(date +%s)"
+        date +%s
     else
         echo "$AUTOGAIN_TESTING_TIMESTAMP"
     fi
@@ -140,7 +140,7 @@ function increase_review_timestamp() {
     fi
     
     local new_timestamp
-    new_timestamp="$(($(get_current_timestamp) + $num_seconds))"
+    new_timestamp="$(($(get_current_timestamp) + num_seconds))"
     logger_debug "Setting review timestamp to: $new_timestamp"
     echo "$new_timestamp" > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
 
@@ -157,7 +157,7 @@ function increase_review_timestamp_after_container_restart() {
 
         time_delta="$(($(get_current_timestamp) - $(cat "$AUTOGAIN_STATS_PREVIOUS_TIMESTAMP_FILE")))"
         logger_debug "time_delta: $time_delta"
-        new_timestamp="$(($(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE") + $time_delta))"
+        new_timestamp="$(($(cat "$AUTOGAIN_REVIEW_TIMESTAMP_FILE") + time_delta))"
         logger_debug "Setting review timestamp to: $new_timestamp"
         echo "$new_timestamp" > "$AUTOGAIN_REVIEW_TIMESTAMP_FILE"
 
@@ -236,7 +236,6 @@ function get_readsb_stat() {
     # -----
     logger_debug "Entering: get_readsb_stat"
     # Get latest section from protobuf, get line including the key we're after:
-    local returnvalue
     protoc_output=$(protoc \
             --proto_path="$READSB_PROTO_PATH" \
             --decode Statistics \
@@ -336,7 +335,7 @@ function get_tracks_new() {
     fi
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE" ]]; then
-        bc_expression="scale=4; "$tracks_new" + $(cat "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE")"
+        bc_expression="scale=4; $tracks_new + $(cat "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE")"
         tracks_new=$(echo "$bc_expression" | bc)
     fi
 
@@ -443,7 +442,7 @@ function get_max_distance_in_metres () {
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE" ]]; then
         bc_expression="$max_distance_in_metres > $(cat "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE")"
-        if [[ ! $(echo $bc_expression | bc) -eq 1 ]]; then
+        if [[ ! $(echo "$bc_expression" | bc) -eq 1 ]]; then
             max_distance_in_metres=$(cat "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE")
         fi
     fi
@@ -596,25 +595,25 @@ function store_current_counters () {
         # Write statistics for this gain level
 
         # longest range (max_distance_in_metres)
-        echo "$(get_max_distance_in_metres)" > "$AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE"
+        get_max_distance_in_metres > "$AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE"
         
         # percentage strong messages (local_strong_signals/local_samples_processed)
-        echo "$(get_local_strong_signals)" > "$AUTOGAIN_STATS_PREVIOUS_LOCAL_STRONG_MSGS_FILE"
+        get_local_strong_signals > "$AUTOGAIN_STATS_PREVIOUS_LOCAL_STRONG_MSGS_FILE"
 
         # largest number of received messages (local_accepted)
-        echo "$(get_local_accepted)" > "$AUTOGAIN_STATS_PREVIOUS_LOCAL_ACCEPTED_MSGS_FILE"
+        get_local_accepted > "$AUTOGAIN_STATS_PREVIOUS_LOCAL_ACCEPTED_MSGS_FILE"
 
         # local_signal
-        echo "$(get_readsb_stat last_15min local_signal)" >> "$AUTOGAIN_STATS_PREVIOUS_LOCAL_SIGNAL_FILE"
+        get_readsb_stat last_15min local_signal >> "$AUTOGAIN_STATS_PREVIOUS_LOCAL_SIGNAL_FILE"
 
         # local_noise
-        echo "$(get_readsb_stat last_15min local_noise)" >> "$AUTOGAIN_STATS_PREVIOUS_LOCAL_NOISE_FILE"
+        get_readsb_stat last_15min local_noise >> "$AUTOGAIN_STATS_PREVIOUS_LOCAL_NOISE_FILE"
 
         # number of tracks_new
-        echo "$(get_tracks_new)" > "$AUTOGAIN_STATS_PREVIOUS_TRACKS_NEW_FILE"
+        get_tracks_new > "$AUTOGAIN_STATS_PREVIOUS_TRACKS_NEW_FILE"
 
         # store timestamp when stats were collected
-        echo "$(get_current_timestamp)" > "$AUTOGAIN_STATS_PREVIOUS_TIMESTAMP_FILE"
+        get_current_timestamp > "$AUTOGAIN_STATS_PREVIOUS_TIMESTAMP_FILE"
 
     fi
 
