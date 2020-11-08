@@ -110,6 +110,7 @@ while true; do
         if [[ -s /tmp/test_stderr ]]; then
             echo -e "${CYAN}stderr:${NOCOLOR}"
 
+            # shellcheck disable=SC2094
             while read -r line; do
                 if echo "$line" | grep -P '^\++ ' > /dev/null 2>&1; then
                     # output from set -x, ignore this
@@ -137,7 +138,6 @@ while true; do
                         echo "$line"
                     fi
                 fi
-            # shellcheck disable=SC2094
             done < /tmp/test_stderr
             echo ""
         fi
