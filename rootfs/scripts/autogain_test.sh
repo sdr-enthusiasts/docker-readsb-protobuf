@@ -57,6 +57,7 @@ for i in "${gain_levels[@]}"; do
     ALLOWED_STDERR+=("Container restart detected, resuming auto-gain state 'init' with gain $i dB")
     ALLOWED_STDERR+=("Auto-gain stage 'init' complete. Best gain figure appears to be: $i dB.")
     ALLOWED_STDERR+=("Container restart detected, resuming auto-gain state 'finetune' with gain $i dB")
+    ALLOWED_STDERR+=("Auto-gain stage 'finetune' complete. Best gain figure appears to be: $i dB.")
 done
 ALLOWED_STDERR+=("Entering auto-gain stage: init")
 ALLOWED_STDERR+=("Entering auto-gain stage: finetune")
