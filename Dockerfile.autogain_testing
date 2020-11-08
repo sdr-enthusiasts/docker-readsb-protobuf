@@ -1,4 +1,4 @@
-FROM readsb_autogain_testing_base
+FROM readsb_autogain_testing_base:latest
 
 COPY autogain_test_data/ /autogain_test_data/
 
