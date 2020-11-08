@@ -61,7 +61,6 @@ ALLOWED_STDERR+=("Entering auto-gain stage: init")
 ALLOWED_STDERR+=("Entering auto-gain stage: finetune")
 ALLOWED_STDERR+=("Entering auto-gain stage: finished")
 
-
 set -eo pipefail
 
 # set up environment
@@ -165,9 +164,9 @@ while true; do
             AUTOGAIN_TESTING_TIMESTAMP=$((AUTOGAIN_TESTING_TIMESTAMP + 900))
         fi
 
-        if [[ "$RUNCOUNT" -ge "3" ]]; then
+        if [[ "$RUNCOUNT" -ge "1" ]]; then
             echo ""
-            echo -e "${LIGHTGREEN}Simulated $RUNCOUNT full runs. All tests passed.${NOCOLOR}"
+            echo -e "${LIGHTGREEN}Simulated $RUNCOUNT full run(s). All tests passed.${NOCOLOR}"
             echo ""
             exit 0
         fi
