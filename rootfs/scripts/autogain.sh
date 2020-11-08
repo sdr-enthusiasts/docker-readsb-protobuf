@@ -246,7 +246,7 @@ function get_readsb_stat() {
                 grep -v '}' | \
                 tr -d ' ' | \
                 grep "$2" | \
-                cut -d ':' -f 2 2> /dev/null)
+                cut -d ':' -f 2 2> /dev/null || true)
 
     logger_debug "readsb stat $1:$2 = $protoc_output"
 
