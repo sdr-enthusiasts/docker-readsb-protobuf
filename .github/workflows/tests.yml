@@ -25,6 +25,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Test autogain scripts
-      run: bash run_autogain_tests.sh
+    - name: Test autogain script
+      run: |
+        docker build -t readsb_autogain_testing_base .
+        docker build -f Dockerfile.autogain_testing -t readsb_autogain_testing .
+        time docker run --rm --no-healthcheck readsb_autogain_testing
     

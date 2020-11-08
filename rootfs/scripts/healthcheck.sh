@@ -27,7 +27,7 @@ function get_ip() {
     # Catch-all (maybe we were given an IP...)
     else
         if [[ -n "$VERBOSE_LOGGING" ]]; then
-            >&2 echo "DEBIG: No host found, assuming IP was given instead of hostname"
+            >&2 echo "DEBUG: No host found, assuming IP was given instead of hostname"
         fi
         IP="$1"
     fi
