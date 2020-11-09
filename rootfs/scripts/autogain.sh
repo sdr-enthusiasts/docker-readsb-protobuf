@@ -240,12 +240,12 @@ function get_readsb_stat() {
             --proto_path="$READSB_PROTO_PATH" \
             --decode Statistics \
             readsb.proto < "$READSB_STATS_PB_FILE" 2> /dev/null | \
-                grep -A 999 --max-count=1 "$1 {" | \
-                grep -B 999 --max-count=1 '}' | \
-                grep -v '{' | \
-                grep -v '}' | \
-                tr -d ' ' | \
-                grep "$2" | \
+                grep -A 999 --max-count=1 "$1 {" 2> /dev/null | \
+                grep -B 999 --max-count=1 '}' 2> /dev/null | \
+                grep -v '{' 2> /dev/null | \
+                grep -v '}' 2> /dev/null | \
+                tr -d ' ' 2> /dev/null | \
+                grep "$2" 2> /dev/null | \
                 cut -d ':' -f 2 2> /dev/null)
 
     logger_debug "readsb stat $1:$2 = $protoc_output"
