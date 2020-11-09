@@ -130,6 +130,8 @@ Take note of the **USB bus number**, and **USB device number**. In the output ab
 Start the docker container, passing through the USB device:
 
 ```shell
+docker volume create readsbpb_rrd
+docker volume create readsbpb_autogain
 docker run \
  -d \
  -it \
@@ -150,14 +152,16 @@ docker run \
  -e READSB_RX_LOCATION_ACCURACY=2 \
  -e READSB_STATS_RANGE=true \
  -e READSB_NET_ENABLE=true \
- -v /local/path/for/autogain=/run/autogain \
- -v /local/path/for/collectd=/run/collectd \
+ -v readsbpb_autogain:/run/autogain \
+ -v readsbpb_rrd:/run/collectd \
  mikenye/readsb-protobuf
 ```
 
 For example:
 
 ```shell
+docker volume create readsbpb_rrd
+docker volume create readsbpb_autogain
 docker run \
  -d \
  -it \
@@ -178,8 +182,8 @@ docker run \
  -e READSB_RX_LOCATION_ACCURACY=2 \
  -e READSB_STATS_RANGE=true \
  -e READSB_NET_ENABLE=true \
- -v /opt/readsb/autogain=/run/autogain \
- -v /opt/readsb/collectd=/run/collectd \
+ -v readsbpb_autogain:/run/autogain \
+ -v readsbpb_rrd:/run/collectd \
  mikenye/readsb-protobuf
 ```
 
