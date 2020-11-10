@@ -183,7 +183,7 @@ RUN set -x && \
     # Build & install kalibrate-rtl
     # See: https://discussions.flightaware.com/t/setting-frequency-offset-or-exact-frequency-ppm/15812/6
     git clone https://github.com/steve-m/kalibrate-rtl.git "/src/kalibrate-rtl" && \
-    pushd "/src/readsb-protobuf" && \
+    pushd "/src/kalibrate-rtl" && \
     ./bootstrap && \
     ./configure && \
     make all install && \
