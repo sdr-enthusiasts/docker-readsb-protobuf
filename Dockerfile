@@ -112,6 +112,12 @@ RUN set -x && \
     # Packages for telegraf
     TEMP_PACKAGES+=(apt-transport-https) && \
     KEPT_PACKAGES+=(socat) && \
+    # Requirements for kalibrate-rtl
+    TEMP_PACKAGES+=(autoconf) && \
+    TEMP_PACKAGES+=(automake) && \
+    TEMP_PACKAGES+=(libtool) && \
+    KEPT_PACKAGES+=(libfftw3-3) && \
+    TEMP_PACKAGES+=(libfftw3-dev) && \
     # Packages for s6-overlay deployment.
     TEMP_PACKAGES+=(file) && \
     TEMP_PACKAGES+=(gnupg) && \
@@ -123,41 +129,41 @@ RUN set -x && \
         && \
     git config --global advice.detachedHead false && \
     # Build rtl-sdr.
-    git clone git://git.osmocom.org/rtl-sdr.git /src/rtl-sdr && \
-    pushd /src/rtl-sdr && \
+    git clone git://git.osmocom.org/rtl-sdr.git "/src/rtl-sdr" && \
+    pushd "/src/rtl-sdr" && \
     #export BRANCH_RTLSDR=$(git tag --sort="-creatordate" | head -1) && \
     #git checkout "tags/${BRANCH_RTLSDR}" && \
     git checkout "${BRANCH_RTLSDR}" && \
     echo "rtl-sdr ${BRANCH_RTLSDR}" >> /VERSIONS && \
-    mkdir -p /src/rtl-sdr/build && \
-    pushd /src/rtl-sdr/build && \
+    mkdir -p "/src/rtl-sdr/build" && \
+    pushd "/src/rtl-sdr/build" && \
     cmake ../ -DINSTALL_UDEV_RULES=ON -Wno-dev && \
     make -Wstringop-truncation && \
     make -Wstringop-truncation install && \
-    cp -v /src/rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/ && \
+    cp -v "/src/rtl-sdr/rtl-sdr.rules" "/etc/udev/rules.d/" && \
     popd && popd && \
     # Build dependencies, libiio for PlutoSDR (ADALM-PLUTO).
-    git clone https://github.com/analogdevicesinc/libiio.git /src/libiio && \
-    pushd /src/libiio && \
+    git clone https://github.com/analogdevicesinc/libiio.git "/src/libiio" && \
+    pushd "/src/libiio" && \
     echo "libiio $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
     cmake ./ && \
     make all && \
     make install && \
     popd && \
     # Build dependencies, libad9361 for PlutoSDR (ADALM-PLUTO).
-    git clone https://github.com/analogdevicesinc/libad9361-iio.git /src/libad9361-iio && \
-    pushd /src/libad9361-iio && \
+    git clone https://github.com/analogdevicesinc/libad9361-iio.git "/src/libad9361-iio" && \
+    pushd "/src/libad9361-iio" && \
     echo "libad9361-iio $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
     cmake ./ && \
     make all && \
     make install && \
     popd && \
     # Build dependencies, bladeRF.
-    git clone https://github.com/Nuand/bladeRF.git /src/bladeRF && \
-    pushd /src/bladeRF && \
+    git clone https://github.com/Nuand/bladeRF.git "/src/bladeRF" && \
+    pushd "/src/bladeRF" && \
     echo "bladeRF $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
-    mkdir -p /src/bladeRF/build && \
-    pushd /src/bladeRF/build && \
+    mkdir -p "/src/bladeRF/build" && \
+    pushd "/src/bladeRF/build" && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DINSTALL_UDEV_RULES=ON ../ && \
     make && \
     make install && \
@@ -174,13 +180,20 @@ RUN set -x && \
     curl -o "$BLADERF_RBF_PATH/adsbxA9.rbf" https://www.nuand.com/fpga/adsbxA9.rbf && \
     curl -o "$BLADERF_RBF_PATH/adsbx40.rbf" https://www.nuand.com/fpga/adsbx40.rbf && \
     curl -o "$BLADERF_RBF_PATH/adsbx115.rbf" https://www.nuand.com/fpga/adsbx115.rbf && \
+    # Build & install kalibrate-rtl
+    git clone https://github.com/steve-m/kalibrate-rtl.git "/src/kalibrate-rtl" && \
+    pushd "/src/readsb-protobuf" && \
+    ./bootstrap && \
+    ./configure && \
+    make all install && \
+    popd && \
     # Build readsb.
-    git clone https://github.com/Mictronics/readsb-protobuf.git /src/readsb-protobuf && \
-    pushd /src/readsb-protobuf && \
+    git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf" && \
+    pushd "/src/readsb-protobuf" && \
     make BLADERF=yes RTLSDR=yes PLUTOSDR=yes && \
     popd && \
     # Install readsb - Copy readsb executables to /usr/local/bin/.
-    find /src/readsb-protobuf -maxdepth 1 -executable -type f -exec cp -v {} /usr/local/bin/ \; && \
+    find "/src/readsb-protobuf" -maxdepth 1 -executable -type f -exec cp -v {} /usr/local/bin/ \; && \
     # Install readsb - Deploy webapp.
     mkdir -p /usr/share/readsb/html && \
     cp -Rv /src/readsb-protobuf/webapp/src/* /usr/share/readsb/html/ && \
