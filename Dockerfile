@@ -181,7 +181,7 @@ RUN set -x && \
     curl -o "$BLADERF_RBF_PATH/adsbx40.rbf" https://www.nuand.com/fpga/adsbx40.rbf && \
     curl -o "$BLADERF_RBF_PATH/adsbx115.rbf" https://www.nuand.com/fpga/adsbx115.rbf && \
     # Build & install kalibrate-rtl
-    # See: https://discussions.flightaware.com/t/rssi/18935
+    # See: https://discussions.flightaware.com/t/setting-frequency-offset-or-exact-frequency-ppm/15812/6
     git clone https://github.com/steve-m/kalibrate-rtl.git "/src/kalibrate-rtl" && \
     pushd "/src/readsb-protobuf" && \
     ./bootstrap && \
