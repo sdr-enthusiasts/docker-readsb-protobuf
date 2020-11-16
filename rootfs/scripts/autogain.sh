@@ -295,7 +295,8 @@ function get_local_strong_signals() {
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE" ]]; then
         local_strong_signals="$(get_readsb_stat total local_strong_signals)"
-        bc_expression="scale=4; ${local_strong_signals:-0} + $(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE")"
+        AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS=$(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS_FILE")
+        bc_expression="scale=4; ${local_strong_signals:-0} + ${AUTOGAIN_STATS_OFFSET_TOTAL_STRONG_MSGS:-0}"
         local_strong_signals=$(echo "$bc_expression" | bc)
     else
         local_strong_signals="$(get_readsb_stat total local_strong_signals)"
@@ -336,7 +337,8 @@ function get_tracks_new() {
     fi
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE" ]]; then
-        bc_expression="scale=4; $tracks_new + $(cat "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE")"
+        AUTOGAIN_STATS_OFFSET_TRACKS_NEW=$(cat "$AUTOGAIN_STATS_OFFSET_TRACKS_NEW_FILE")
+        bc_expression="scale=4; $tracks_new + ${AUTOGAIN_STATS_OFFSET_TRACKS_NEW:-0}"
         tracks_new=$(echo "$bc_expression" | bc)
     fi
 
@@ -419,12 +421,12 @@ function get_snr() {
     logger_debug "Exiting: get_snr"
 }
 
-
 function get_local_accepted () {
     logger_debug "Entering: get_local_accepted"
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE" ]]; then
-        bc_expression="scale=4; $(get_readsb_stat total local_accepted) + $(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE")"
+        AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS=$(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE")
+        bc_expression="scale=4; $(get_readsb_stat total local_accepted) + ${AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS:-0}"
         local_accepted=$(echo "$bc_expression" | bc -l)
     else
         local_accepted="$(get_readsb_stat total local_accepted)"
@@ -442,7 +444,8 @@ function get_max_distance_in_metres () {
     max_distance_in_metres="$(get_readsb_stat total max_distance_in_metres)"
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE" ]]; then
-        bc_expression="$max_distance_in_metres > $(cat "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE")"
+        AUTOGAIN_STATS_OFFSET_MAX_DISTANCE=$(cat "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE")
+        bc_expression="$max_distance_in_metres > ${AUTOGAIN_STATS_OFFSET_MAX_DISTANCE:-0}"
         if [[ ! $(echo "$bc_expression" | bc) -eq 1 ]]; then
             max_distance_in_metres=$(cat "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE")
         fi
