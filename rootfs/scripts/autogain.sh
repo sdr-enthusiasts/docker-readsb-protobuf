@@ -424,7 +424,8 @@ function get_local_accepted () {
     logger_debug "Entering: get_local_accepted"
 
     if [[ -e "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE" ]]; then
-        bc_expression="scale=4; $(get_readsb_stat total local_accepted) + $(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE")"
+        AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS=$(cat "$AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS_FILE")
+        bc_expression="scale=4; $(get_readsb_stat total local_accepted) + ${AUTOGAIN_STATS_OFFSET_TOTAL_ACCEPTED_MSGS:-0}"
         local_accepted=$(echo "$bc_expression" | bc -l)
     else
         local_accepted="$(get_readsb_stat total local_accepted)"
