@@ -283,7 +283,7 @@ COPY rootfs/ /
 ENTRYPOINT [ "/init" ]
 
 # Add healthcheck
-HEALTHCHECK --start-period=300s --interval=300s CMD /scripts/healthcheck.sh
+HEALTHCHECK --start-period=3600s --interval=600s CMD /scripts/healthcheck.sh
 
 # This container can't be rootless - readsb can't talk to RTLSDR if USER is set :-(
 
