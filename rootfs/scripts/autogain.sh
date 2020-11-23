@@ -568,22 +568,21 @@ function update_stats_files () {
 
     logger_debug "Entering: update_stats_files"
 
+    # Get current gain level
+    current_gain_setting=$(cat "$AUTOGAIN_CURRENT_VALUE_FILE")
+    logger_debug "Current gain level is $current_gain_setting"
+
     # Write statistics for this gain level
-
     # longest range (max_distance_in_metres)
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_max_distance_in_metres)" >> "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
-    
+    echo "$current_gain_setting $(get_max_distance_in_metres)" >> "$AUTOGAIN_STATS_MAX_DISTANCE_FILE"
     # percentage strong messages (local_strong_signals/local_samples_processed)
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_pct_strong_signals)" >> "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
-
+    echo "$current_gain_setting $(get_pct_strong_signals)" >> "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
     # largest number of received messages (local_accepted)
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_local_accepted)" >> "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE"
-
+    echo "$current_gain_setting $(get_local_accepted)" >> "$AUTOGAIN_STATS_TOTAL_ACCEPTED_MSGS_FILE"
     # best SNR (local_signal - local_noise)
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_snr)" >> "$AUTOGAIN_STATS_SNR_FILE"
-
+    echo "$current_gain_setting $(get_snr)" >> "$AUTOGAIN_STATS_SNR_FILE"
     # number of tracks_new
-    echo "$(cat "$AUTOGAIN_CURRENT_VALUE_FILE") $(get_tracks_new)" >> "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
+    echo "$current_gain_setting $(get_tracks_new)" >> "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
 
     logger_debug "Exiting: update_stats_files"   
 }
