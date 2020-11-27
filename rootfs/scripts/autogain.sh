@@ -759,6 +759,9 @@ function adjust_minimum_gain_if_required() {
                 # Gain levels in this block are below min strong messages
                 count_below_min=$((count_below_min + 1))
                 logger_debug "adjust_minimum_gain_if_required: Consecutive below minimum % strong messages: $count_below_min"
+                if [[ "$count_below_min" -eq "3" ]]; then
+                    break
+                fi
             fi
         else
             # Gain levels in this block are above max strong messages
@@ -768,7 +771,7 @@ function adjust_minimum_gain_if_required() {
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
     # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
     # Bring up the minimum gain
-    if [[ "$count_below_min" -gt "2" ]]; then
+    if [[ "$count_below_min" -eq "3" ]]; then
         logger_verbose "Bringing up minimum gain level to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
         cp "$AUTOGAIN_CURRENT_VALUE_FILE" "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
     fi
@@ -803,8 +806,9 @@ function adjust_maximum_gain_if_required() {
                 # Gain levels in this block are above max strong messages
                 count_above_max=$((count_above_max + 1))
                 logger_debug "adjust_maximum_gain_if_required: Consecutive above maximum % strong messages: $count_above_max"
-                if [[ "$count_above_max" -eq "2" ]]; then
+                if [[ "$count_above_max" -eq "3" ]]; then
                     max_gain_value="$gain_level"
+                    break
                 fi
             fi
         else
@@ -818,7 +822,7 @@ function adjust_maximum_gain_if_required() {
 
     # If we've seen two consecutive "above maximums" after the "good" region, we've most likely gone past the "good" region.
     # Lower the maximum gain
-    if [[ "$count_above_max" -gt "2" ]]; then
+    if [[ "$count_above_max" -eq "3" ]]; then
         # TODO - only lower if AUTOGAIN_MAX_GAIN_VALUE_FILE gain is above max_gain_value
         logger_verbose "Lowering maximum gain level to: $max_gain_value dB"
         echo "$max_gain_value" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE"
