@@ -67,6 +67,7 @@ Tested and working on:
     * [`autogain` Measurement](#autogain-measurement)
     * [`polar_range` Measurement](#polar_range-measurement)
     * [`readsb` Measurement](#readsb-measurement)
+  * [Estimating PPM](#estimating-ppm)
   * [Getting help](#getting-help)
   * [Changelog](#changelog)
 
@@ -376,7 +377,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 |----------|-------------|--------------------------------|---------|
 | `READSB_RTLSDR_DEVICE` | Select device by serial number. | `--device=<serial>` | Unset |
 | `READSB_RTLSDR_ENABLE_AGC` | Set this to any value to enable digital AGC (not tuner AGC!) | `--enable-agc` | Unset |
-| `READSB_RTLSDR_PPM` | Set oscillator frequency correction in PPM | `--ppm=<correction>` | Unset |
+| `READSB_RTLSDR_PPM` | Set oscillator frequency correction in PPM. See section [Estimating PPM](#estimating-ppm) below | `--ppm=<correction>` | Unset |
 
 ### `readsb` BladeRF Options
 
@@ -785,6 +786,70 @@ Field keys should be as-per the `StatisticEntry` message schema from [`readsb.pr
 | `tracks_new`                    | float | Total tracks (aircrafts) created. Each track represents a unique aircraft and persists for up to 5 minutes. |
 | `tracks_single_message`         | float | Tracks consisting of only a single message. These are usually due to message decoding errors that produce a bad aircraft address. |
 | `tracks_with_position`          | float | Tracks consisting of a position. |
+
+## Estimating PPM
+
+Every RTL-SDR dongle will have a small frequency error as it is cheaply mass produced and not tested for accuracy.  This frequency error is linear across the spectrum, and can be adjusted in most SDR programs by entering a PPM (parts per million) offset value. This image allows you to adjust the PPM figure using the `READSB_RTLSDR_PPM` environment variable.
+
+To estimate your RTL-SDR's PPM, you can:
+
+* Stop the `readsb` container if it is running (freeing up the RTL-SDR for use)
+* Running `docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb readsbtest:latest`. This takes about 30 minutes.
+* Updating your `readsb` container with the suggested PPM value
+
+Example output is as follows:
+
+```text
+$ docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb readsbtest:latest
+
+Running rtl_test -p for 30 minutes
+
+Found 1 device(s):
+  0:  Realtek, RTL2832U, SN: 00001000
+
+Using device 0: Generic RTL2832U
+Found Rafael Micro R820T tuner
+Supported gain values (29): 0.0 0.9 1.4 2.7 3.7 7.7 8.7 12.5 14.4 15.7 16.6 19.7 20.7 22.9 25.4 28.0 29.7 32.8 33.8 36.4 37.2 38.6 40.2 42.1 43.4 43.9 44.5 48.0 49.6
+[R82XX] PLL not locked!
+Sampling at 2048000 S/s.
+Reporting PPM error measurement every 10 seconds...
+Press ^C after a few minutes.
+Reading samples in async mode...
+real sample rate: 2048129 current PPM: 63 cumulative PPM: 63
+real sample rate: 2047957 current PPM: -21 cumulative PPM: 20
+real sample rate: 2048125 current PPM: 61 cumulative PPM: 34
+...<lines removed for brevity>...
+real sample rate: 2047998 current PPM: -1 cumulative PPM: 1
+real sample rate: 2047992 current PPM: -3 cumulative PPM: 0
+real sample rate: 2048005 current PPM: 3 cumulative PPM: 1
+Signal caught, exiting!
+
+User cancel, exiting...
+Samples per million lost (minimum): 0
+
+Results:
+
+PPM setting of: -2, Score of: 1
+PPM setting of: 10, Score of: 1
+PPM setting of: 20, Score of: 1
+PPM setting of: 34, Score of: 1
+PPM setting of: 6, Score of: 1
+PPM setting of: 63, Score of: 1
+PPM setting of: 8, Score of: 1
+PPM setting of: 9, Score of: 1
+PPM setting of: -1, Score of: 2
+PPM setting of: 3, Score of: 4
+PPM setting of: 4, Score of: 4
+PPM setting of: 5, Score of: 4
+PPM setting of: 7, Score of: 4
+PPM setting of: 2, Score of: 8
+PPM setting of: 0, Score of: 51
+PPM setting of: 1, Score of: 94
+
+Estimated optimum PPM setting: 1
+```
+
+In this instance, the RTL-SDR has a PPM of 1, so we would set the environment variable `READSB_RTLSDR_PPM=1`.
 
 ## Getting help
 
