@@ -21,7 +21,7 @@ echo -e "${WHITE}Results:${NOCOLOR}"
 echo ""
 grep -oP '^real sample rate: \d+ current PPM: \-?\d+ cumulative PPM: \K\-?\d+$' "$TEMPFILE_RTL_TEST_OUTPUT" > "$TEMPFILE_RTL_TEST_PPM_VALUES"
 # shellcheck disable=SC2013
-for i in $(sort -u ppm_values "$TEMPFILE_RTL_TEST_PPM_VALUES"); do
+for i in $(sort -u "$TEMPFILE_RTL_TEST_PPM_VALUES"); do
     echo "PPM setting of: $i, Score of: $(grep --count -oP "^$i\$" "$TEMPFILE_RTL_TEST_PPM_VALUES")" >> "$TEMPFILE_RTL_TEST_PPM_SCORES"
 done
 sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES"
