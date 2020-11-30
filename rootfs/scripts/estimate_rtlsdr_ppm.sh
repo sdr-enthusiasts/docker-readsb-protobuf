@@ -28,7 +28,7 @@ sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES"
 
 # Show estimated optimum ppm setting
 echo ""
-echo "${WHITE}Estimated optimum PPM setting: $(sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES" | tail -1 | cut -d ' ' -f 4 | tr -d ',')${NOCOLOR}"
+echo -e "${WHITE}Estimated optimum PPM setting: $(sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES" | tail -1 | cut -d ' ' -f 4 | tr -d ',')${NOCOLOR}"
 echo ""
 
 # Clean up
