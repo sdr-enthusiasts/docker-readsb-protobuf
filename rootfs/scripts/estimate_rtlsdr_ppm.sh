@@ -1,5 +1,4 @@
-#!/usr/bin/with-contenv bash
-# shellcheck shell=bash
+#!/usr/bin/env bash
 
 # Define colors
 WHITE='\033[1;37m'
