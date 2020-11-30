@@ -19,16 +19,17 @@ timeout 30m rtl_test -p | tee "$TEMPFILE_RTL_TEST_OUTPUT"
 echo ""
 echo -e "${WHITE}Results:${NOCOLOR}"
 grep -oP '^real sample rate: \d+ current PPM: \-?\d+ cumulative PPM: \K\-?\d+$' "$TEMPFILE_RTL_TEST_OUTPUT" > "$TEMPFILE_RTL_TEST_PPM_VALUES"
+# shellcheck disable=SC2013
 for i in $(sort -u ppm_values "$TEMPFILE_RTL_TEST_PPM_VALUES"); do
     echo "PPM setting of: $i, Score of: $(grep --count -oP "^$i\$" "$TEMPFILE_RTL_TEST_PPM_VALUES")" >> "$TEMPFILE_RTL_TEST_PPM_SCORES"
 done
 echo -e "${WHITE}"
-cat "$TEMPFILE_RTL_TEST_PPM_SCORES" | sort -nk 7
+sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES"
 echo -e "${NOCOLOR}"
 
 # Show estimated optimum ppm setting
 echo ""
-echo "${WHITE}Estimated optimum PPM setting: $(cat ppm_scores | sort -nk 7 | tail -1 | cut -d ' ' -f 4 | tr -d ',')${NOCOLOR}"
+echo "${WHITE}Estimated optimum PPM setting: $(sort -nk 7 "$TEMPFILE_RTL_TEST_PPM_SCORES" | tail -1 | cut -d ' ' -f 4 | tr -d ',')${NOCOLOR}"
 echo ""
 
 # Clean up
