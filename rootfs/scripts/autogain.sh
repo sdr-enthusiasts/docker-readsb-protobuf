@@ -1,19 +1,6 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 
-# TODOs/Enhancements:
-#  - Consider environment variables for "Active Times".
-#    Where I live, there is a curfew for flights at night time so auto-gain 
-#    results are skewed overnight. Also weekends are very quiet. It would be
-#    good to be able to tell autogain to only collect results during certain
-#    days/times.
-#    EG:  AUTOGAIN_COLLECTION_SCHEDULE="start_time;stop_time;day_of_week" ?
-#         "0800;2000;Mon-Fri" would:
-#           - start collection at 8am Mon-Fri
-#           - stop collection at 8pm Mon-Fri
-#    Would need to ensure that results hold over if not completed within this
-#    window, otherwise we may never finish a level...
-
 # If troubleshooting:
 if [[ -n "$DEBUG_LOGGING" ]]; then
     set -x
