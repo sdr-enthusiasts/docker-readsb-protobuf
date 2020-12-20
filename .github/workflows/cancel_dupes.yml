@@ -3,7 +3,7 @@ on:
   workflow_run:
     workflows:
       - 'Deploy to Docker Hub'
-      - 'Linting'
+      - 'Check Linting'
       - 'Tests'
     types: ['requested']
 
