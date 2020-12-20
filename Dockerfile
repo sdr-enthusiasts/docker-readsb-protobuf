@@ -126,7 +126,7 @@ RUN set -x && \
     TEMP_PACKAGES+=(gnupg) && \
     # Install packages.
     apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
         ${KEPT_PACKAGES[@]} \
         ${TEMP_PACKAGES[@]} \
         && \
