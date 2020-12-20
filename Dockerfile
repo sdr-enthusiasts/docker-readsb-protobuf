@@ -61,6 +61,9 @@ ENV BRANCH_RTLSDR="ed0317e6a58c098874ac58b769cf2e609c18d9a5" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Copy container filesystem
+COPY rootfs/ /
+
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
@@ -274,10 +277,8 @@ RUN set -x && \
     rm -rf /src/* /tmp/* /var/lib/apt/lists/* && \
     # Document versions.
     echo "readsb $(readsb --version | cut -d ' ' -f 2)" >> /VERSIONS && \
-    cat /VERSIONS
-
-# Copy config files
-COPY rootfs/ /
+    cat /VERSIONS && \
+    readsb --version | cut -d ' ' -f 2 > /CONTAINER_VERSION
 
 # Set s6 init as entrypoint
 ENTRYPOINT [ "/init" ]
@@ -286,5 +287,3 @@ ENTRYPOINT [ "/init" ]
 HEALTHCHECK --start-period=3600s --interval=600s CMD /scripts/healthcheck.sh
 
 # This container can't be rootless - readsb can't talk to RTLSDR if USER is set :-(
-
-# TODO: disable biastee on container stop (if biastee enabled)
