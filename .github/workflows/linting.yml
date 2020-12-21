@@ -1,7 +1,6 @@
 name: Check Linting
 
 on:
-  push:
   pull_request:
     branches: 
       - main
