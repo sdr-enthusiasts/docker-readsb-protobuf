@@ -12,8 +12,13 @@ function get_ip() {
     # $1 = IP(v4) address or hostname
     # -----
     local IP
+    if IP=$(echo "$1" | grep -P '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$' 2> /dev/null); then
+        :
+        if [[ -n "$VERBOSE_LOGGING" ]]; then
+            >&2 echo "DEBUG: Already IP"
+        fi
     # Attempt to resolve $1 into an IP address with getent
-    if IP=$(getent hosts "$1" 2> /dev/null | cut -d ' ' -f 1); then
+    elif IP=$(getent hosts "$1" 2> /dev/null | cut -d ' ' -f 1); then
         :
         if [[ -n "$VERBOSE_LOGGING" ]]; then
             >&2 echo "DEBUG: Got IP via getent"
