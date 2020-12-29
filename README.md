@@ -58,7 +58,7 @@ bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only
     * [Fine-Tuning Stage](#fine-tuning-stage)
     * [Finished Stage](#finished-stage)
     * [State/Log/Stats Files](#statelogstats-files)
-    * [Forcing auto-gain to re-run from scrach](#forcing-auto-gain-to-re-run-from-scrach)
+    * [Forcing auto-gain to re-run from scratch](#forcing-auto-gain-to-re-run-from-scratch)
   * [Advanced Usage: Creating an MLAT Hub](#advanced-usage-creating-an-mlat-hub)
   * [Grafana Dashboard](#grafana-dashboard)
   * [InfluxDB Schema](#influxdb-schema)
