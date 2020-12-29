@@ -555,7 +555,7 @@ In the finished stage, auto-gain does nothing (as `readsb` is operating at optim
 
 All files for auto-gain are located at `/run/autogain` within the container. They should not be modified by hand.
 
-### Forcing auto-gain to re-run from scrach
+### Forcing auto-gain to re-run from scratch
 
 Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Restart the container and auto-gain will detect this and re-start at initialisation stage.
 
