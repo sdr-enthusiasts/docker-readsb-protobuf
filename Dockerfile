@@ -194,13 +194,16 @@ RUN set -x && \
     # Build readsb.
     git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf" && \
     pushd "/src/readsb-protobuf" && \
+    BRANCH_READSB=$(git tag --sort="creatordate" | tail -1) && \
+    git checkout "$BRANCH_READSB" && \
     make BLADERF=yes RTLSDR=yes PLUTOSDR=yes && \
     popd && \
     # Install readsb - Copy readsb executables to /usr/local/bin/.
     find "/src/readsb-protobuf" -maxdepth 1 -executable -type f -exec cp -v {} /usr/local/bin/ \; && \
     # Install readsb - Deploy webapp.
+    git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf-db" && \
     mkdir -p /usr/share/readsb/html && \
-    cp -Rv /src/readsb-protobuf/webapp/src/* /usr/share/readsb/html/ && \
+    cp -Rv /src/readsb-protobuf-db/webapp/src/* /usr/share/readsb/html/ && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
     # Install readsb - Configure collectd & graphs.
@@ -239,7 +242,7 @@ RUN set -x && \
     # lighttpd configuration - mod_compress location + permissions.
     mkdir -p "/var/cache/lighttpd/compress/script/readsb/backend" && \
     mkdir -p "/var/cache/lighttpd/compress/css/bootstrap" && \
-    mkdir -p "/var/cache/lighttpd/compress//css/leaflet" && \
+    mkdir -p "/var/cache/lighttpd/compress/css/leaflet" && \
     chown -R readsb:www-data "/var/cache/lighttpd" && \
     chmod -R u+rwx,g+rwx "/var/cache/lighttpd" && \
     # lighttpd configuration - remove "unconfigured" conf.
@@ -253,7 +256,7 @@ RUN set -x && \
     chown -R readsb "/run/collectd" && \
     ln -s "/run/collectd" "/var/lib" && \
     # collectd configuration - back up original config file.
-    mv -v /etc/collectd/collectd.conf /etc/collectd/collectd.conf.original && \
+    mv -v /etc/collectd/collectd.conf /etc/collectd/collectd.conf.original && \ 
     # copy our config in & remove empty dir
     mv -v /etc/collectd.readsb/collectd.conf /etc/collectd/collectd.conf && \
     rmdir /etc/collectd.readsb && \
@@ -272,6 +275,9 @@ RUN set -x && \
     echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y telegraf && \
+    mv -v /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.original && \
+    mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
+    rmdir /etc/telegraf.readsb && \
     # Deploy s6-overlay.
     curl -s https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh && \
     # Clean-up.
