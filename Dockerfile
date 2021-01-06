@@ -256,6 +256,8 @@ RUN set -x && \
     ln -s "/run/collectd" "/var/lib" && \
     # collectd configuration - back up original config file.
     mv -v /etc/collectd/collectd.conf /etc/collectd/collectd.conf.original && \ 
+    mv -v /etc/collectd.readsb/collectd.conf /etc/collectd/collectd.conf && \
+    rmdir /etc/collectd.readsb && \
     # collectd configuration - remove unneeded readsb plugins.
     sed -i 's/^LoadPlugin syslog.*//g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     sed -i 's/^LoadPlugin exec.*//g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
@@ -271,6 +273,9 @@ RUN set -x && \
     echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y telegraf && \
+    mv -v /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.original && \
+    mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
+    rmdir /etc/telegraf.readsb && \
     # Deploy s6-overlay.
     curl -s https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh && \
     # Clean-up.
