@@ -58,7 +58,7 @@ bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only
     * [Fine-Tuning Stage](#fine-tuning-stage)
     * [Finished Stage](#finished-stage)
     * [State/Log/Stats Files](#statelogstats-files)
-    * [Forcing auto-gain to re-run from scrach](#forcing-auto-gain-to-re-run-from-scrach)
+    * [Forcing auto-gain to re-run from scratch](#forcing-auto-gain-to-re-run-from-scratch)
   * [Advanced Usage: Creating an MLAT Hub](#advanced-usage-creating-an-mlat-hub)
   * [Grafana Dashboard](#grafana-dashboard)
   * [InfluxDB Schema](#influxdb-schema)
@@ -555,7 +555,7 @@ In the finished stage, auto-gain does nothing (as `readsb` is operating at optim
 
 All files for auto-gain are located at `/run/autogain` within the container. They should not be modified by hand.
 
-### Forcing auto-gain to re-run from scrach
+### Forcing auto-gain to re-run from scratch
 
 Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Restart the container and auto-gain will detect this and re-start at initialisation stage.
 
@@ -793,13 +793,13 @@ Every RTL-SDR dongle will have a small frequency error as it is cheaply mass pro
 To estimate your RTL-SDR's PPM, you can:
 
 * Stop the `readsb` container if it is running (freeing up the RTL-SDR for use)
-* Running `docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb readsbtest:latest`. This takes about 30 minutes.
+* Running `docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb mikenye/readsb-protobuf:latest`. This takes about 30 minutes.
 * Updating your `readsb` container with the suggested PPM value
 
 Example output is as follows:
 
 ```text
-$ docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb readsbtest:latest
+$ docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb mikenye/readsb-protobuf:latest
 
 Running rtl_test -p for 30 minutes
 
