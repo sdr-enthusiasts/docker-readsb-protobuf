@@ -201,8 +201,9 @@ RUN set -x && \
     # Install readsb - Copy readsb executables to /usr/local/bin/.
     find "/src/readsb-protobuf" -maxdepth 1 -executable -type f -exec cp -v {} /usr/local/bin/ \; && \
     # Install readsb - Deploy webapp.
+    git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf-db" && \
     mkdir -p /usr/share/readsb/html && \
-    cp -Rv /src/readsb-protobuf/webapp/src/* /usr/share/readsb/html/ && \
+    cp -Rv /src/readsb-protobuf-db/webapp/src/* /usr/share/readsb/html/ && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
     # Install readsb - Configure collectd & graphs.
@@ -241,7 +242,7 @@ RUN set -x && \
     # lighttpd configuration - mod_compress location + permissions.
     mkdir -p "/var/cache/lighttpd/compress/script/readsb/backend" && \
     mkdir -p "/var/cache/lighttpd/compress/css/bootstrap" && \
-    mkdir -p "/var/cache/lighttpd/compress//css/leaflet" && \
+    mkdir -p "/var/cache/lighttpd/compress/css/leaflet" && \
     chown -R readsb:www-data "/var/cache/lighttpd" && \
     chmod -R u+rwx,g+rwx "/var/cache/lighttpd" && \
     # lighttpd configuration - remove "unconfigured" conf.
