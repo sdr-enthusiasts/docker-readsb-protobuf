@@ -23,6 +23,7 @@ for stat in "${stats_from_protoc[@]}"; do
   if [[ "$key" == "key" ]]; then
     bearing="$value"
     range[$bearing]=0
+
   elif [[ "$key" == "value" ]]; then
     range[$bearing]="$value"
   else
@@ -35,11 +36,14 @@ done
 #                         ms   μs   ns
 timestamp="$(($(date +%s)*1000*1000*1000))"
 
-# Prepare output - add ranges
-for key in "${!range[@]}"; do
+# Prepare output - add ranges in reverse (see issue #19 - https://github.com/mikenye/docker-readsb-protobuf/issues/19)
+bearing=0
+for key in {71..0}; do
 
   # Prepare output - add measurement
-  output="polar_range,bearing=$(printf "%.2d " "$key") range=${range[$key]} $timestamp"
+  output="polar_range,bearing=$(printf "%.2d " "$bearing") range=${range[$key]} $timestamp"
   
   echo "$output"
+
+  bearing=$((bearing+1))
 done
