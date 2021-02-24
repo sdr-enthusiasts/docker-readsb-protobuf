@@ -108,9 +108,10 @@ RUN set -x && \
     KEPT_PACKAGES+=(libprotobuf-c1) && \
     KEPT_PACKAGES+=(librrd8) && \
     TEMP_PACKAGES+=(librrd-dev) && \
+    TEMP_PACKAGES+=(libncurses5-dev) && \
     # Packages for readsb web interface & graphs.
     KEPT_PACKAGES+=(lighttpd) && \
-    KEPT_PACKAGES+=(collectd) && \
+    KEPT_PACKAGES+=(collectd-core) && \
     KEPT_PACKAGES+=(rrdtool) && \
     # Packages for telegraf
     TEMP_PACKAGES+=(apt-transport-https) && \
