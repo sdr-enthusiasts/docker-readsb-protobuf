@@ -208,6 +208,7 @@ RUN set -x && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
     # Install readsb - Configure collectd & graphs.
+    mkdir -p /etc/collectd/collectd.conf.d && \
     cp -v /src/readsb-protobuf/debian/collectd/readsb.collectd.conf /etc/collectd/collectd.conf.d/ && \
     mkdir -p /usr/share/readsb/graphs && \
     cp -v /src/readsb-protobuf/debian/graphs/*.sh /usr/share/readsb/graphs/ && \
