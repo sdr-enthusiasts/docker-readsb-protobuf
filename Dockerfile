@@ -257,8 +257,6 @@ RUN set -x && \
     mv -v "/var/lib/collectd" "/run" && \
     chown -R readsb "/run/collectd" && \
     ln -s "/run/collectd" "/var/lib" && \
-    # collectd configuration - back up original config file.
-    mv -v /etc/collectd/collectd.conf /etc/collectd/collectd.conf.original && \ 
     # copy our config in & remove empty dir
     mv -v /etc/collectd.readsb/collectd.conf /etc/collectd/collectd.conf && \
     rmdir /etc/collectd.readsb && \
