@@ -108,9 +108,10 @@ RUN set -x && \
     KEPT_PACKAGES+=(libprotobuf-c1) && \
     KEPT_PACKAGES+=(librrd8) && \
     TEMP_PACKAGES+=(librrd-dev) && \
+    TEMP_PACKAGES+=(libncurses5-dev) && \
     # Packages for readsb web interface & graphs.
     KEPT_PACKAGES+=(lighttpd) && \
-    KEPT_PACKAGES+=(collectd) && \
+    KEPT_PACKAGES+=(collectd-core) && \
     KEPT_PACKAGES+=(rrdtool) && \
     # Packages for telegraf
     TEMP_PACKAGES+=(apt-transport-https) && \
@@ -207,6 +208,7 @@ RUN set -x && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
     # Install readsb - Configure collectd & graphs.
+    mkdir -p /etc/collectd/collectd.conf.d && \
     cp -v /src/readsb-protobuf/debian/collectd/readsb.collectd.conf /etc/collectd/collectd.conf.d/ && \
     mkdir -p /usr/share/readsb/graphs && \
     cp -v /src/readsb-protobuf/debian/graphs/*.sh /usr/share/readsb/graphs/ && \
@@ -255,8 +257,6 @@ RUN set -x && \
     mv -v "/var/lib/collectd" "/run" && \
     chown -R readsb "/run/collectd" && \
     ln -s "/run/collectd" "/var/lib" && \
-    # collectd configuration - back up original config file.
-    mv -v /etc/collectd/collectd.conf /etc/collectd/collectd.conf.original && \ 
     # copy our config in & remove empty dir
     mv -v /etc/collectd.readsb/collectd.conf /etc/collectd/collectd.conf && \
     rmdir /etc/collectd.readsb && \
