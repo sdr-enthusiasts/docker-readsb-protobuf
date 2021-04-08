@@ -302,7 +302,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 | `READSB_ENABLE_BIASTEE` | Set to any value to enable bias tee on supporting interfaces | `--enable-biastee` | Unset |
 | `READSB_FIX` | Set to any value to enable CRC single-bit error correction | `--fix` | Unset |
 | `READSB_FORWARD_MLAT` | Set this to any value to allow forwarding of received mlat results to output ports. Leave this unset unless you know what you're doing. | `--forward-mlat` | Unset |
-| `READSB_FREQ` | Set frequency (in MHz) | `--freq=<hz>` | `1090` |
+| `READSB_FREQ` | Set frequency (in Hz). Typically `1090000000`. | `--freq=<hz>` | `1090000000` |
 | `READSB_GAIN` | Set gain (in dB). Use `autogain` to have the container determine an appropriate gain, more on this below. | `--gain=<db>` | Max gain |
 | `READSB_GNSS` | Set this to any value to show altitudes as GNSS when available | `--gnss` | Unset |
 | `READSB_LAT` | Reference/receiver surface latitude | `--lat=<lat>` | Unset |
