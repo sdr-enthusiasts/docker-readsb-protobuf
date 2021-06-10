@@ -102,6 +102,11 @@ RUN set -x && \
     # libserialport0 + dev - Required for building libiio (bladeRF/PlutoSDR).
     KEPT_PACKAGES+=(libserialport0) && \
     TEMP_PACKAGES+=(libserialport-dev) && \
+    # avahi libraries - needed for libiio
+    TEMP_PACKAGES+=(libavahi-client-dev) && \
+    KEPT_PACKAGES+=(libavahi-client3) && \
+    TEMP_PACKAGES+=(libavahi-common-dev) && \
+    KEPT_PACKAGES+=(libavahi-common3) && \
     # Requirements for readsb.
     TEMP_PACKAGES+=(protobuf-c-compiler) && \
     TEMP_PACKAGES+=(libprotobuf-c-dev) && \
