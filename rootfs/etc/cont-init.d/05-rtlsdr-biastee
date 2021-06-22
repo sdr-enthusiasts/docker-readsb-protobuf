@@ -10,8 +10,8 @@ if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
     if [[ -n "$READSB_ENABLE_BIASTEE" ]]; then
         # Prepare temp file
         biast_tempfile=$(mktemp)
-        # Attempt to get devices
-        rtl_biast > "$biast_tempfile" 2>&1 || true
+        # Attempt to get devices, use random serial so it's very unlikely we claim an SDR used by someone else
+        rtl_biast -d "$RANDOM$RANDOM" > "$biast_tempfile" 2>&1 || true
         # Get number of devices
         num_devices=$(sed -n 's/^Found\s\+\([0-9]\+\)\s\+device(s):\s*$/\1/p' "$biast_tempfile")
         # If we have more than one device, we need a serial number
