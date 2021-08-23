@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:buster-20210816-slim
 
 ENV BRANCH_RTLSDR="ed0317e6a58c098874ac58b769cf2e609c18d9a5" \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
