@@ -58,8 +58,11 @@ ENV BRANCH_RTLSDR="ed0317e6a58c098874ac58b769cf2e609c18d9a5" \
     READSB_PROTO_PATH="/opt/readsb-protobuf" \
     # Current gain value
     GAIN_VALUE_FILE="/tmp/.gain_current" \
+    ###########################################################################
     # default BEAST out port
-    READSB_NET_BEAST_OUTPUT_PORT=30005
+    READSB_NET_BEAST_OUTPUT_PORT=30005 \
+    # default BaseStation out port
+    READSB_NET_SBS_OUTPUT_PORT=30003
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
