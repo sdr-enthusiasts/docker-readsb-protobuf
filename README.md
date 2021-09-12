@@ -467,9 +467,13 @@ These variables control the sending of flight data and readsb metrics to [Influx
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `INFLUXDBURL` | The full HTTP URL for your InfluxDB instance. | Unset |
-| `INFLUXDBUSERNAME` | If using authentication, a username for your InfluxDB instance. If not using authentication, leave unset. | Unset |
-| `INFLUXDBPASSWORD` | If using authentication, a password for your InfluxDB instance. If not using authentication, leave unset. | Unset |
+| `INFLUXDBURL` | The full HTTP URL for your InfluxDB instance. Required for both InfluxDB v1 and v2. | Unset |
+| `INFLUXDBUSERNAME` | If using authentication, a username for your InfluxDB instance. If not using authentication, leave unset. Not required for InfluxDB v2. | Unset |
+| `INFLUXDBPASSWORD` | If using authentication, a password for your InfluxDB instance. If not using authentication, leave unset. Not required for InfluxDB v2. | Unset |
+| `INFLUXDB_V2` | Set to a non empty value to enable InfluxDB V2 output. | Unset |
+| `INFLUXDB_V2_BUCKET` | Required if `INFLUXDB_V2` is set, bucket must already exist in your InfluxDB v2 instance. | Unset |
+| `INFLUXDB_V2_ORG` | Required if `INFLUXDB_V2` is set. | Unset |
+| `INFLUXDB_V2_TOKEN` | Required if `INFLUXDB_V2` is set. | Unset |
 
 If `INFLUXDBURL` is left unset, the built-in instance of Telegraf will not be started.
 
