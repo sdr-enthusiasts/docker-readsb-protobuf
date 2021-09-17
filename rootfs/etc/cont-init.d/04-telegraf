@@ -19,24 +19,34 @@ if [[ -n "$INFLUXDBURL" ]]; then
 
   ##### TELEGRAF CONFIG - OUTPUT TO INFLUXDB #####
   {
-    echo "[[outputs.influxdb]]"
+    # if set, configure Telegraf to use InfluxDB v2.x
+    if [[ -n "${INFLUXDB_V2+x}"  ]]; then
+      echo "[[outputs.influxdb_v2]]"
+      echo " urls = [\"${INFLUXDBURL}\"]"
+      echo " token = \"${INFLUXDB_V2_TOKEN}\""
+      echo " organization = \"${INFLUXDB_V2_ORG}\""
+      echo " bucket = \"${INFLUXDB_V2_BUCKET}\""
+    else # else default to InfluxDB v1 output
+      echo "[[outputs.influxdb]]"
+      
+      # Add InfluxDB URL
+      echo " urls = [\"${INFLUXDBURL}\"]"
+      
+      # Add InfluxDB v1 options.
+      echo 'database = "readsb"'
+      echo 'skip_database_creation = false'
+      echo 'timeout = "5s"'
 
-    # Add InfluxDB URL
-    echo " urls = [\"${INFLUXDBURL}\"]"
+      # If set, add InfluxDB username
+      if [[ -n "${INFLUXDBUSERNAME+x}" ]]; then
+        echo "username = \"${INFLUXDBUSERNAME}\""
+      fi
 
-    # Finish config
-    echo 'database = "readsb"'
-    echo 'skip_database_creation = false'
-    echo 'timeout = "5s"'
+      # If set, add InfluxDB password
+      if [[ -n "${INFLUXDBPASSWORD+x}" ]]; then
+        echo "password = \"${INFLUXDBPASSWORD}\""
+      fi
 
-    # If set, add InfluxDB username
-    if [[ -n "${INFLUXDBUSERNAME+x}" ]]; then
-      echo "username = \"${INFLUXDBUSERNAME}\""
-    fi
-
-    # If set, add InfluxDB password
-    if [[ -n "${INFLUXDBPASSWORD+x}" ]]; then
-      echo "password = \"${INFLUXDBPASSWORD}\""
     fi
 
   } > "$OUTPUT_INFLUXDB_CONFIG_FILE"
