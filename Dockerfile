@@ -62,7 +62,9 @@ ENV BRANCH_RTLSDR="ed0317e6a58c098874ac58b769cf2e609c18d9a5" \
     # default BEAST out port
     READSB_NET_BEAST_OUTPUT_PORT=30005 \
     # default BaseStation out port
-    READSB_NET_SBS_OUTPUT_PORT=30003
+    READSB_NET_SBS_OUTPUT_PORT=30003 \
+    # default RAW out put
+    READSB_NET_RAW_OUTPUT_PORT=30002
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
