@@ -54,8 +54,10 @@ if [[ -n "$INFLUXDBURL" ]]; then
 
   # If gain is specified...
   if [[ -n "$READSB_GAIN" ]]; then
+
     # If the user wants to use the autogain system...
     if [[ "$READSB_GAIN" == "autogain" ]]; then
+
       ##### TELEGRAF CONFIG - INPUT FROM autogain FILES #####
       {
         echo "[[inputs.exec]]"
@@ -68,10 +70,11 @@ if [[ -n "$INFLUXDBURL" ]]; then
       } > "$INPUT_AUTOGAIN_FILE"
 
     fi
+    
   fi
 
 
-  ##### TELEGRAF CONFIG - INPUT FROM protoc OUTPUT #####
+  ##### TELEGRAF CONFIG - INPUT FROM protoc #####
   {
     echo "[[inputs.exec]]"
     echo "commands = ["
@@ -83,7 +86,7 @@ if [[ -n "$INFLUXDBURL" ]]; then
   } > "$INPUT_READSB_PROTOC_DATA"
 
 
-  ##### TELEGRAF CONFIG - INPUT FROM protoc polar_range OUTPUT #####
+  ##### TELEGRAF CONFIG - INPUT FROM protoc polar_range #####
   {
     echo "[[inputs.exec]]"
     echo "commands = ["
