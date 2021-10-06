@@ -6,7 +6,7 @@
 
 set -eo pipefail
 
-if [[ [[ -n "$INFLUXDBURL" ]] || [[ -n "$ENABLE_PROMETHEUS" ]] ]]; then
+if [ -n "$INFLUXDBURL" ] || [ -n "$ENABLE_PROMETHEUS" ]; then
 
   SOCAT_BIN="$(which socat)"
   SOCAT_CMD=(-ls)
