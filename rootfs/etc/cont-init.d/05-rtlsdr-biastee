@@ -20,11 +20,11 @@ if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
                 # For each line...
                 while read -r line; do
                     # get device id for specific serial
-                    if echo "$line" | grep -oP '^\s+([0-9]+):\s+(\w+),\s+(\w+),\s+SN:\s+([0-9]{8})\s*$' > /dev/null 2>&1; then
-                        device_id=$(echo "$line" | sed -n 's/^\s\+\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{8\}\)\s*$/\1/p')
-                        device_manufacturer=$(echo "$line" | sed -n 's/^\s\+\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{8\}\)\s*$/\2/p')
-                        device_model=$(echo "$line" | sed -n 's/^\s\+\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{8\}\)\s*$/\3/p')
-                        device_serial=$(echo "$line" | sed -n 's/^\s\+\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{8\}\)\s*$/\4/p')
+                    if echo "$line" | grep -oP '^([0-9]+):\s+(\w+),\s+(\w+),\s+SN:\s+([0-9]{1,8})\s*$' > /dev/null 2>&1; then
+                        device_id=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\1/p')
+                        device_manufacturer=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\2/p')
+                        device_model=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\3/p')
+                        device_serial=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\4/p')
 
                         if [[ "$device_serial" == "$READSB_RTLSDR_DEVICE" ]]; then
                             echo "Enabling bias tee for device $device_id:  $device_manufacturer, $device_model, SN: $device_serial"
