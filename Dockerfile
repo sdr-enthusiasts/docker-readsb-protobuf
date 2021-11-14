@@ -126,6 +126,7 @@ RUN set -x && \
     TEMP_PACKAGES+=(libncurses5-dev) && \
     # Packages for readsb web interface & graphs.
     KEPT_PACKAGES+=(lighttpd) && \
+    KEPT_PACKAGES+=(lighttpd-mod-magnet) && \
     KEPT_PACKAGES+=(collectd-core) && \
     KEPT_PACKAGES+=(rrdtool) && \
     # Packages for telegraf
@@ -222,6 +223,9 @@ RUN set -x && \
     cp -Rv /src/readsb-protobuf-db/webapp/src/* /usr/share/readsb/html/ && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
+    mkdir -p /etc/lighttpd/lua && \
+    echo -e 'server.modules += ("mod_magnet")\n\n$HTTP["url"] =~ "^/health/?" {\n  magnet.attract-physical-path-to = ("/etc/lighttpd/lua/healthcheck.lua")\n}' > /etc/lighttpd/conf-enabled/90-healthcheck.conf && \
+    echo -e 'lighty.content = { "OK" }\nreturn 200' > /etc/lighttpd/lua/healthcheck.lua && \
     # Install readsb - Configure collectd & graphs.
     mkdir -p /etc/collectd/collectd.conf.d && \
     cp -v /src/readsb-protobuf/debian/collectd/readsb.collectd.conf /etc/collectd/collectd.conf.d/ && \
@@ -286,7 +290,7 @@ RUN set -x && \
     chown readsb "/run/autogain" && \
     # Install telegraf
     curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
-    source /etc/os-release && \ 
+    source /etc/os-release && \
     echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y telegraf && \
