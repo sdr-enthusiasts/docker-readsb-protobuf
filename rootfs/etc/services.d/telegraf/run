@@ -3,7 +3,7 @@
 
 set -eo pipefail
 
-if [[ -n "$INFLUXDBURL" ]]; then
+if [ -n "$INFLUXDBURL" ] || [ -n "$ENABLE_PROMETHEUS" ]; then
 
   #shellcheck disable=SC2016
   telegraf \

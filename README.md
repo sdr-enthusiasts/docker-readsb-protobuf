@@ -51,6 +51,7 @@ bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only
     * [`readsb` Graphs Options](#readsb-graphs-options)
     * [Auto-Gain Options](#auto-gain-options)
     * [InfluxDB Options](#influxdb-options)
+    * [Prometheus Options](#prometheus-options)
   * [Ports](#ports)
   * [Paths & Volumes](#paths--volumes)
   * [Auto-Gain system](#auto-gain-system)
@@ -475,7 +476,15 @@ These variables control the sending of flight data and readsb metrics to [Influx
 | `INFLUXDB_V2_ORG` | Required if `INFLUXDB_V2` is set. | Unset |
 | `INFLUXDB_V2_TOKEN` | Required if `INFLUXDB_V2` is set. | Unset |
 
-If `INFLUXDBURL` is left unset, the built-in instance of Telegraf will not be started.
+### Prometheus Options
+
+These variables control exposing flight data and readsb metrics to [Prometheus](https://prometheus.io) (via a built-in instance of [Telegraf](https://docs.influxdata.com/telegraf/)).
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ENABLE_PROMETHEUS` | Set to any string to enable Prometheus support | Unset |
+| `PROMETHEUSPORT` | The port that the prometheus client will listen on | `9273` |
+| `PROMETHEUSPATH` | The path that the prometheus client will publish metrics on | `/metrics` |
 
 ## Ports
 
