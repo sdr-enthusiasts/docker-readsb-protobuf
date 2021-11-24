@@ -578,7 +578,7 @@ There may be reasons you wish to use `readsb` to combine MLAT feeds from differe
 
 To do this, you can create a second container to act as an MLAT hub.
 
-Here are example service definitions (from a `docker-compose.yml` file) for `readsb`, `mlathub`, `asup2influxdb` and `tar1090`.
+Here are example service definitions (from a `docker-compose.yml` file) for `readsb`, `mlathub`, `adsb2influxdb` and `tar1090`.
 
 ```yml
 ...
