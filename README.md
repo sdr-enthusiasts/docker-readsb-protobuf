@@ -124,7 +124,7 @@ Plug in your USB radio, and run the command `lsusb`. Find your radio. It'll look
 Bus 001 Device 004: ID 0bda:2832 Realtek Semiconductor Corp. RTL2832U DVB-T
 ```
 
-Take note of the **USB bus number**, and **USB device number**. In the output above, its **001** and **004** respectively. This will be used in the examples below.
+Take note of the **USB bus number**, and **USB device number**. In the output above, its **001** and **004** respectively. While the individual device can be passed through (`/dev/bus/usb/001/004` in this case), it's more reliable to pass the entire USB bus through, as seen in the examples below.
 
 ## Up-and-Running with `docker run`
 
@@ -139,7 +139,7 @@ docker run \
  --restart=always \
  --name readsb \
  --hostname readsb \
- --device /dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER:/dev/bus/usb/USB_BUS_NUMBER/USB_DEVICE_NUMBER \
+ --device /dev/bus/usb:/dev/bus/usb \
  -p 8080:8080 \
  -p 30005:30005 \
  -e TZ=<YOUR_TIMEZONE> \
@@ -169,7 +169,7 @@ docker run \
  --restart=always \
  --name readsb \
  --hostname readsb \
- --device /dev/bus/usb/001/004:/dev/bus/usb/001/004 \
+ --device /dev/bus/usb:/dev/bus/usb \
  -p 8080:8080 \
  -p 30005:30005 \
  -e TZ=Australia/Perth \
@@ -213,7 +213,7 @@ services:
     hostname: readsb
     restart: always
     devices:
-      - /dev/bus/usb/001/004:/dev/bus/usb/001/004
+      - /dev/bus/usb:/dev/bus/usb
     ports:
       - 8080:8080
       - 30005:30005
@@ -589,7 +589,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
     hostname: readsb
     restart: always
     devices:
-      - /dev/bus/usb/001/004:/dev/bus/usb/001/004
+      - /dev/bus/usb:/dev/bus/usb
     ports:
       - 8079:8080
       - 30003:30003
