@@ -19,7 +19,7 @@ bearing=0
 
 # Pre-fill range array with "0"s to fix https://github.com/mikenye/docker-readsb-protobuf/issues/64
 for key in {71..0}; do
-  range[$key] = 0
+  range[$key]=0
 done
 
 for stat in "${stats_from_protoc[@]}"; do
