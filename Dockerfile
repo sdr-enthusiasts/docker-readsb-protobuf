@@ -1,4 +1,4 @@
-FROM FROM ghcr.io/fredclausen/docker-baseimage:readsb-full
+FROM ghcr.io/fredclausen/docker-baseimage:readsb-full
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     ###########################################################################
