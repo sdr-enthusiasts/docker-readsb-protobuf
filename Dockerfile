@@ -1,7 +1,6 @@
-FROM debian:buster-20220125-slim
+FROM FROM ghcr.io/fredclausen/docker-baseimage:readsb-full
 
-ENV BRANCH_RTLSDR="ed0317e6a58c098874ac58b769cf2e609c18d9a5" \
-    S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     ###########################################################################
     ##### READSBRRD ENVIRONMENT VARS #####
     READSBRRD_STEP=60 \
@@ -77,53 +76,16 @@ COPY rootfs/ /
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
-    # Required for autogain
-    KEPT_PACKAGES+=(bc) && \
-    # Required for nicer logging.
-    KEPT_PACKAGES+=(gawk) && \
-    # Required for healthchecks.
-    KEPT_PACKAGES+=(procps) && \
-    KEPT_PACKAGES+=(net-tools) && \
     # Required for automatic gain script (to interpret .pb files).
     KEPT_PACKAGES+=(protobuf-compiler) && \
     # Required for downloading stuff.
-    TEMP_PACKAGES+=(ca-certificates) && \
-    TEMP_PACKAGES+=(curl) && \
     TEMP_PACKAGES+=(git) && \
     # Required for building multiple packages.
     TEMP_PACKAGES+=(build-essential) && \
     TEMP_PACKAGES+=(pkg-config) && \
     TEMP_PACKAGES+=(cmake) && \
-    # libusb-1.0-0 + dev - Required for rtl-sdr, libiio (bladeRF/PlutoSDR).
-    KEPT_PACKAGES+=(libusb-1.0-0) && \
-    TEMP_PACKAGES+=(libusb-1.0-0-dev) && \
-    # libxml2 + dev - Required for libiio (bladeRF/PlutoSDR).
-    KEPT_PACKAGES+=(libxml2) && \
-    TEMP_PACKAGES+=(libxml2-dev) && \
-    # bison & flex - Required for building libiio (bladeRF/PlutoSDR).
-    TEMP_PACKAGES+=(bison) && \
-    TEMP_PACKAGES+=(flex) && \
-    # libcdk5 + dev - Required for building libiio (bladeRF/PlutoSDR).
-    KEPT_PACKAGES+=(libcdk5nc6) && \
-    TEMP_PACKAGES+=(libcdk5-dev) && \
-    # libaio1 + dev - Required for building libiio (bladeRF/PlutoSDR).
-    KEPT_PACKAGES+=(libaio1) && \
-    TEMP_PACKAGES+=(libaio-dev) && \
-    # libserialport0 + dev - Required for building libiio (bladeRF/PlutoSDR).
-    KEPT_PACKAGES+=(libserialport0) && \
-    TEMP_PACKAGES+=(libserialport-dev) && \
-    # avahi libraries - needed for libiio
-    TEMP_PACKAGES+=(libavahi-client-dev) && \
-    KEPT_PACKAGES+=(libavahi-client3) && \
-    TEMP_PACKAGES+=(libavahi-common-dev) && \
-    KEPT_PACKAGES+=(libavahi-common3) && \
-    # Requirements for readsb.
-    TEMP_PACKAGES+=(protobuf-c-compiler) && \
-    TEMP_PACKAGES+=(libprotobuf-c-dev) && \
-    KEPT_PACKAGES+=(libprotobuf-c1) && \
-    KEPT_PACKAGES+=(librrd8) && \
-    TEMP_PACKAGES+=(librrd-dev) && \
-    TEMP_PACKAGES+=(libncurses5-dev) && \
+    TEMP_PACKAGES+=(autoconf) && \
+    TEMP_PACKAGES+=(automake) && \
     # Packages for readsb web interface & graphs.
     KEPT_PACKAGES+=(lighttpd) && \
     KEPT_PACKAGES+=(lighttpd-mod-magnet) && \
@@ -133,8 +95,6 @@ RUN set -x && \
     TEMP_PACKAGES+=(apt-transport-https) && \
     KEPT_PACKAGES+=(socat) && \
     # Requirements for kalibrate-rtl
-    TEMP_PACKAGES+=(autoconf) && \
-    TEMP_PACKAGES+=(automake) && \
     TEMP_PACKAGES+=(libtool) && \
     KEPT_PACKAGES+=(libfftw3-3) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
@@ -148,58 +108,6 @@ RUN set -x && \
         ${TEMP_PACKAGES[@]} \
         && \
     git config --global advice.detachedHead false && \
-    # Build rtl-sdr.
-    git clone git://git.osmocom.org/rtl-sdr.git "/src/rtl-sdr" && \
-    pushd "/src/rtl-sdr" && \
-    #export BRANCH_RTLSDR=$(git tag --sort="-creatordate" | head -1) && \
-    #git checkout "tags/${BRANCH_RTLSDR}" && \
-    git checkout "${BRANCH_RTLSDR}" && \
-    echo "rtl-sdr ${BRANCH_RTLSDR}" >> /VERSIONS && \
-    mkdir -p "/src/rtl-sdr/build" && \
-    pushd "/src/rtl-sdr/build" && \
-    cmake ../ -DINSTALL_UDEV_RULES=ON -Wno-dev && \
-    make -Wstringop-truncation && \
-    make -Wstringop-truncation install && \
-    cp -v "/src/rtl-sdr/rtl-sdr.rules" "/etc/udev/rules.d/" && \
-    popd && popd && \
-    # Build dependencies, libiio for PlutoSDR (ADALM-PLUTO).
-    git clone https://github.com/analogdevicesinc/libiio.git "/src/libiio" && \
-    pushd "/src/libiio" && \
-    echo "libiio $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
-    cmake ./ && \
-    make all && \
-    make install && \
-    popd && \
-    # Build dependencies, libad9361 for PlutoSDR (ADALM-PLUTO).
-    git clone https://github.com/analogdevicesinc/libad9361-iio.git "/src/libad9361-iio" && \
-    pushd "/src/libad9361-iio" && \
-    echo "libad9361-iio $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
-    cmake ./ && \
-    make all && \
-    make install && \
-    popd && \
-    # Build dependencies, bladeRF.
-    git clone https://github.com/Nuand/bladeRF.git "/src/bladeRF" && \
-    pushd "/src/bladeRF" && \
-    echo "bladeRF $(git log | head -1 | cut -d ' ' -f 2)" >> /VERSIONS && \
-    mkdir -p "/src/bladeRF/build" && \
-    pushd "/src/bladeRF/build" && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DINSTALL_UDEV_RULES=ON ../ && \
-    make && \
-    make install && \
-    ldconfig && \
-    popd && popd && \
-    # Download bladeRF FPGA Images.
-    BLADERF_RBF_PATH="/usr/share/Nuand/bladeRF" && \
-    mkdir -p "$BLADERF_RBF_PATH" && \
-    curl -o "$BLADERF_RBF_PATH/hostedxA4.rbf" https://www.nuand.com/fpga/hostedxA4-latest.rbf && \
-    curl -o "$BLADERF_RBF_PATH/hostedxA9.rbf" https://www.nuand.com/fpga/hostedxA9-latest.rbf && \
-    curl -o "$BLADERF_RBF_PATH/hostedx40.rbf" https://www.nuand.com/fpga/hostedx40-latest.rbf && \
-    curl -o "$BLADERF_RBF_PATH/hostedx115.rbf" https://www.nuand.com/fpga/hostedx115-latest.rbf && \
-    curl -o "$BLADERF_RBF_PATH/adsbxA4.rbf" https://www.nuand.com/fpga/adsbxA4.rbf && \
-    curl -o "$BLADERF_RBF_PATH/adsbxA9.rbf" https://www.nuand.com/fpga/adsbxA9.rbf && \
-    curl -o "$BLADERF_RBF_PATH/adsbx40.rbf" https://www.nuand.com/fpga/adsbx40.rbf && \
-    curl -o "$BLADERF_RBF_PATH/adsbx115.rbf" https://www.nuand.com/fpga/adsbx115.rbf && \
     # Build & install kalibrate-rtl
     # See: https://discussions.flightaware.com/t/setting-frequency-offset-or-exact-frequency-ppm/15812/6
     git clone https://github.com/steve-m/kalibrate-rtl.git "/src/kalibrate-rtl" && \
@@ -208,30 +116,12 @@ RUN set -x && \
     ./configure && \
     make all install && \
     popd && \
-    # Build readsb.
-    git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf" && \
-    pushd "/src/readsb-protobuf" && \
-    BRANCH_READSB=$(git tag --sort="creatordate" | tail -1) && \
-    git checkout "$BRANCH_READSB" && \
-    make BLADERF=yes RTLSDR=yes PLUTOSDR=yes && \
-    popd && \
-    # Install readsb - Copy readsb executables to /usr/local/bin/.
-    find "/src/readsb-protobuf" -maxdepth 1 -executable -type f -exec cp -v {} /usr/local/bin/ \; && \
     # Install readsb - Deploy webapp.
-    git clone https://github.com/Mictronics/readsb-protobuf.git "/src/readsb-protobuf-db" && \
-    mkdir -p /usr/share/readsb/html && \
-    cp -Rv /src/readsb-protobuf-db/webapp/src/* /usr/share/readsb/html/ && \
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
     cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
     mkdir -p /etc/lighttpd/lua && \
     echo -e 'server.modules += ("mod_magnet")\n\n$HTTP["url"] =~ "^/health/?" {\n  magnet.attract-physical-path-to = ("/etc/lighttpd/lua/healthcheck.lua")\n}' > /etc/lighttpd/conf-enabled/90-healthcheck.conf && \
     echo -e 'lighty.content = { "OK" }\nreturn 200' > /etc/lighttpd/lua/healthcheck.lua && \
-    # Install readsb - Configure collectd & graphs.
-    mkdir -p /etc/collectd/collectd.conf.d && \
-    cp -v /src/readsb-protobuf/debian/collectd/readsb.collectd.conf /etc/collectd/collectd.conf.d/ && \
-    mkdir -p /usr/share/readsb/graphs && \
-    cp -v /src/readsb-protobuf/debian/graphs/*.sh /usr/share/readsb/graphs/ && \
-    chmod a+x /usr/share/readsb/graphs/*.sh && \
     # Install readsb - users/permissions/dirs.
     addgroup --system --gid 1000 readsb && \
     useradd \
@@ -253,9 +143,6 @@ RUN set -x && \
     chown -R readsb: "/run/readsb" && \
     touch "/etc/default/readsb" && \
     chown -R readsb: "/etc/default/readsb" && \
-    # readsb - copy readsb protobuf proto file
-    mkdir -p /opt/readsb-protobuf && \
-    cp -v /src/readsb-protobuf/readsb.proto /opt/readsb-protobuf/readsb.proto && \
     # lighttpd configuration - PID file location + permissions.
     sed -i 's/^server\.pid-file.*/server.pid-file = "\/var\/run\/lighttpd\/lighttpd.pid"/g' /etc/lighttpd/lighttpd.conf && \
     mkdir -p "/var/run/lighttpd" && \
