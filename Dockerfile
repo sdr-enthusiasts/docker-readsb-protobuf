@@ -78,8 +78,8 @@ RUN set -x && \
     KEPT_PACKAGES=() && \
     # Required for automatic gain script (to interpret .pb files).
     KEPT_PACKAGES+=(protobuf-compiler) && \
-    # Required for downloading stuff.
-    TEMP_PACKAGES+=(git) && \
+    # Required for downloading stuff & readsb database updates
+    KEPT_PACKAGES+=(git) && \
     # Required for building multiple packages.
     TEMP_PACKAGES+=(build-essential) && \
     TEMP_PACKAGES+=(pkg-config) && \
@@ -91,6 +91,7 @@ RUN set -x && \
     KEPT_PACKAGES+=(lighttpd-mod-magnet) && \
     KEPT_PACKAGES+=(collectd-core) && \
     KEPT_PACKAGES+=(rrdtool) && \
+    KEPT_PACKAGES+=(jq) && \
     # Packages for telegraf
     TEMP_PACKAGES+=(apt-transport-https) && \
     KEPT_PACKAGES+=(socat) && \

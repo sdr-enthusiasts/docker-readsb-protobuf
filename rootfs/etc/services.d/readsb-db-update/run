@@ -1,0 +1,51 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+set -eo pipefail
+
+# get dbchecksum before update
+DBVERSION_BEFORE=$(jq .version < /usr/share/readsb/html/db/dbversion.json)
+
+# attempt download of aircrafts.json
+curl \
+    --silent \
+    --location \
+    -o /usr/share/readsb/html/db/aircrafts.json \
+    -z /usr/share/readsb/html/db/aircrafts.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/aircrafts.json'
+
+# attempt download of dbversion.json
+curl \
+    --silent \
+    --location \
+    -o /usr/share/readsb/html/db/dbversion.json \
+    -z /usr/share/readsb/html/db/dbversion.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/dbversion.json'
+
+# attempt download of operators.json
+curl \
+    --silent \
+    --location \
+    -o /usr/share/readsb/html/db/operators.json \
+    -z /usr/share/readsb/html/db/operators.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/operators.json'
+
+# attempt download of types.json
+curl \
+    --silent \
+    --location \
+    -o /usr/share/readsb/html/db/types.json \
+    -z /usr/share/readsb/html/db/types.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json'
+
+# get dbchecksum after update
+DBVERSION_AFTER=$(jq .version < /usr/share/readsb/html/db/dbversion.json)
+
+# db version has changed
+if [[ "$DBVERSION_BEFORE" -ne "$DBVERSION_AFTER" ]]; then
+    # shellcheck disable=SC2016
+    echo "readsb webapp database updated from version $DBVERSION_BEFORE to version $DBVERSION_AFTER" | awk '{print "[readsb-db-update] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+fi
+
+# run again in ~24 hours
+sleep 86400
