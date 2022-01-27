@@ -114,13 +114,15 @@ RUN set -x && \
     ./configure && \
     make all install && \
     popd && \
-    # Install readsb - Deploy webapp.
+    # readsb - Deploy webapp.
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
-    cp -v /src/readsb-protobuf/debian/lighttpd/* /etc/lighttpd/conf-enabled/ && \
+    ln -s /etc/lighttpd/conf-available/89-readsb.conf /etc/lighttpd/conf-enabled/89-readsb.conf && \
+    ln -s /etc/lighttpd/conf-available/88-readsb-statcache.conf /etc/lighttpd/conf-enabled/88-readsb-statcache.conf && \
+    # Healthcheck stuff
     mkdir -p /etc/lighttpd/lua && \
     echo -e 'server.modules += ("mod_magnet")\n\n$HTTP["url"] =~ "^/health/?" {\n  magnet.attract-physical-path-to = ("/etc/lighttpd/lua/healthcheck.lua")\n}' > /etc/lighttpd/conf-enabled/90-healthcheck.conf && \
     echo -e 'lighty.content = { "OK" }\nreturn 200' > /etc/lighttpd/lua/healthcheck.lua && \
-    # Install readsb - users/permissions/dirs.
+    # readsb - users/permissions/dirs.
     addgroup --system --gid 1000 readsb && \
     useradd \
       --uid 1000 \
