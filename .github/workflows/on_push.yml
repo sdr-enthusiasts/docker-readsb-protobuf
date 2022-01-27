@@ -9,6 +9,15 @@ on:
       - master
       - main
 
+    # Don't trigger if it's just a documentation update
+    paths-ignore:
+      - '**.md'
+      - '**.MD'
+      - 'LICENSE'
+      - '.gitattributes'
+      - '.gitignore'
+      - '.dockerignore'
+
   # Build and deploy the image nightly (to ensure we pick up any security updates)
   schedule:
     - cron: "0 10 * * *"
