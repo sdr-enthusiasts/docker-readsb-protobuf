@@ -189,7 +189,6 @@ RUN set -x && \
     # Update readsb webapp databases
     # attempt download of aircrafts.json
     curl \
-        --silent \
         --location \
         -o /usr/share/readsb/html/db/aircrafts.json \
         -z /usr/share/readsb/html/db/aircrafts.json \
@@ -197,7 +196,6 @@ RUN set -x && \
         && \
     # attempt download of dbversion.json
     curl \
-        --silent \
         --location \
         -o /usr/share/readsb/html/db/dbversion.json \
         -z /usr/share/readsb/html/db/dbversion.json \
@@ -205,7 +203,6 @@ RUN set -x && \
         && \
     # attempt download of operators.json
     curl \
-        --silent \
         --location \
         -o /usr/share/readsb/html/db/operators.json \
         -z /usr/share/readsb/html/db/operators.json \
@@ -213,7 +210,6 @@ RUN set -x && \
         && \
     # attempt download of types.json
     curl \
-        --silent \
         --location \
         -o /usr/share/readsb/html/db/types.json \
         -z /usr/share/readsb/html/db/types.json \
