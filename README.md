@@ -1,6 +1,6 @@
 # mikenye/readsb-protobuf
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mikenye/docker-readsb-protobuf/Deploy%20to%20Docker%20Hub)](https://github.com/mikenye/docker-readsb-protobuf/actions?query=workflow%3A%22Deploy+to+Docker+Hub%22)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mikenye/docker-readsb-protobuf/Push)](https://github.com/mikenye/docker-readsb-protobuf/actions?query=workflow%3A%22Push%22)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mikenye/readsb-protobuf.svg)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mikenye/readsb-protobuf/latest)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
