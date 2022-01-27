@@ -98,6 +98,7 @@ RUN set -x && \
     TEMP_PACKAGES+=(libtool) && \
     KEPT_PACKAGES+=(libfftw3-3) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
+    TEMP_PACKAGES+=(libusb-1.0-0-dev) && \
     # Install packages.
     apt-get update && \
     apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
