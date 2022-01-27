@@ -186,6 +186,39 @@ RUN set -x && \
     mv -v /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.original && \
     mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
     rmdir /etc/telegraf.readsb && \
+    # Update readsb webapp databases
+    # attempt download of aircrafts.json
+    curl \
+        --silent \
+        --location \
+        -o /usr/share/readsb/html/db/aircrafts.json \
+        -z /usr/share/readsb/html/db/aircrafts.json \
+        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/aircrafts.json' \
+        && \
+    # attempt download of dbversion.json
+    curl \
+        --silent \
+        --location \
+        -o /usr/share/readsb/html/db/dbversion.json \
+        -z /usr/share/readsb/html/db/dbversion.json \
+        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/dbversion.json' \
+        && \
+    # attempt download of operators.json
+    curl \
+        --silent \
+        --location \
+        -o /usr/share/readsb/html/db/operators.json \
+        -z /usr/share/readsb/html/db/operators.json \
+        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/operators.json' \
+        && \
+    # attempt download of types.json
+    curl \
+        --silent \
+        --location \
+        -o /usr/share/readsb/html/db/types.json \
+        -z /usr/share/readsb/html/db/types.json \
+        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
+        && \
     # Clean-up.
     apt-get remove -y ${TEMP_PACKAGES[@]} && \
     apt-get autoremove -y && \
