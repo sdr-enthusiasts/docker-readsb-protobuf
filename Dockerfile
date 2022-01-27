@@ -98,9 +98,6 @@ RUN set -x && \
     TEMP_PACKAGES+=(libtool) && \
     KEPT_PACKAGES+=(libfftw3-3) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
-    # Packages for s6-overlay deployment.
-    TEMP_PACKAGES+=(file) && \
-    TEMP_PACKAGES+=(gnupg) && \
     # Install packages.
     apt-get update && \
     apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
@@ -184,8 +181,6 @@ RUN set -x && \
     mv -v /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.original && \
     mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
     rmdir /etc/telegraf.readsb && \
-    # Deploy s6-overlay.
-    curl -s https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh && \
     # Clean-up.
     apt-get remove -y ${TEMP_PACKAGES[@]} && \
     apt-get autoremove -y && \
