@@ -32,6 +32,7 @@ jobs:
   linting-shellcheck:
     name: Linting (shellcheck)
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
       - name: Pull koalaman/shellcheck:stable Image
@@ -42,6 +43,7 @@ jobs:
   linting-hadolint:
     name: Linting (hadolint)
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
       - name: Pull hadolint/hadolint:latest Image
@@ -52,6 +54,7 @@ jobs:
   linting-markdownlint:
     name: Linting (markdownlint)
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
       - name: Pull markdownlint/markdownlint:latest Image
@@ -62,6 +65,7 @@ jobs:
   test-autogain:
     name: Test autogain script
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
     steps:
     - uses: actions/checkout@v2
     - name: Test autogain script
