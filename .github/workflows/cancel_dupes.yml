@@ -2,7 +2,6 @@ name: Cancelling Duplicates
 on:
   workflow_run:
     workflows:
-      - 'Deploy (Multi-Arch)'
       - 'Deploy'
     types: ['requested']
 
