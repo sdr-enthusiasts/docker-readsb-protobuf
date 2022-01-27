@@ -94,6 +94,7 @@ RUN set -x && \
     # Packages for telegraf
     TEMP_PACKAGES+=(apt-transport-https) && \
     KEPT_PACKAGES+=(socat) && \
+    TEMP_PACKAGES+=(gnupg) && \
     # Requirements for kalibrate-rtl
     TEMP_PACKAGES+=(libtool) && \
     KEPT_PACKAGES+=(libfftw3-3) && \
