@@ -27,6 +27,10 @@ This image will configure a software-defined radio (SDR) to receive and decode M
 
 bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only RTL2832U as outlined above), but support for the devices is compiled in. If you have the hardware and would be willing to test, please [open an issue on GitHub](https://github.com/mikenye/docker-readsb-protobuf/issues).
 
+## Note for Users running 32-bit Debian Buster-based OSes on ARM
+
+Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-Fixes)!
+
 ## Table of Contents
 
 * [mikenye/readsb-protobuf](#mikenyereadsb-protobuf)
