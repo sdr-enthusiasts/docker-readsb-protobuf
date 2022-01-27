@@ -1,4 +1,4 @@
-name: Deploy
+name: Pull Request
 
 on:
 
