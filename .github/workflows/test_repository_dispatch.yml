@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - env:
-        - INPUTS_TRIGGERED_FROM: ${{ github.event.inputs.triggered_from }}
+          INPUTS_TRIGGERED_FROM: ${{ github.event.inputs.triggered_from }}
         run: |
           echo "RECEIVED DISPATCH FROM: $INPUTS_TRIGGERED_FROM"
