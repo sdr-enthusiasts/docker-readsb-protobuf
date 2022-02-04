@@ -10,5 +10,7 @@ jobs:
     name: dispatch_received
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "RECEIVED DISPATCH!"
+      - env:
+        - INPUTS_TRIGGERED_FROM: ${{ github.event.inputs.triggered_from }}
+        run: |
+          echo "RECEIVED DISPATCH FROM: $INPUTS_TRIGGERED_FROM"
