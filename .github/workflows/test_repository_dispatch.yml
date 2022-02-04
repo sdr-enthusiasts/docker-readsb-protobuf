@@ -1,0 +1,14 @@
+---
+
+name: Test Dispatch (receive)
+
+on:
+  repository_dispatch:
+    types: [new-docker-baseimage-readsb-full]
+
+jobs:
+  test:
+    name: dispatch_received
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "RECEIVED!"

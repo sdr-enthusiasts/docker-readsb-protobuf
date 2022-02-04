@@ -13,6 +13,7 @@ on:
     paths-ignore:
       - '**.md'
       - '**.MD'
+      - '**.yml'
       - 'LICENSE'
       - '.gitattributes'
       - '.gitignore'
@@ -126,6 +127,7 @@ jobs:
 
   deploy_dockerhub_single_arch:
     name: Deploy
+    needs: [hadolint]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -135,13 +137,6 @@ jobs:
           - linux/arm/v6
           - linux/arm/v7
           - linux/i386
-
-    # Set job-wide environment variables
-    #  - REPO: repo name on dockerhub
-    #  - IMAGE: image name on dockerhub
-    env:
-      REPO: mikenye
-      IMAGE: readsb-protobuf
 
     steps:
 

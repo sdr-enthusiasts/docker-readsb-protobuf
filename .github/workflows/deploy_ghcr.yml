@@ -13,10 +13,15 @@ on:
     paths-ignore:
       - '**.md'
       - '**.MD'
+      - '**.yml'
       - 'LICENSE'
       - '.gitattributes'
       - '.gitignore'
       - '.dockerignore'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
 
@@ -81,13 +86,13 @@ jobs:
       # Get version from "latest"
       - name: Get latest image version
         run: |
-          docker pull "${{ env.REPO }}/${{ env.IMAGE }}:latest"
-          echo "VERSION_TAG=$(docker run --rm --entrypoint cat "${{ env.REPO }}/${{ env.IMAGE }}:latest" /CONTAINER_VERSION)" >> $GITHUB_ENV
+          docker pull "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest"
+          echo "VERSION_TAG=$(docker run --rm --entrypoint cat "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest" /CONTAINER_VERSION)" >> $GITHUB_ENV
 
       # Show version from "latest"
       - name: Show latest image version
         run: |
-          echo "${{ env.REPO }}/${{ env.IMAGE }}:latest contains version: ${{ env.VERSION_TAG }}"
+          echo "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest contains version: ${{ env.VERSION_TAG }}"
 
       # Build version specific
       - name: Build & Push - version specific
@@ -199,13 +204,13 @@ jobs:
       # Get version from "latest"
       - name: Get latest image version
         run: |
-          docker pull "${{ env.REPO }}/${{ env.IMAGE }}:latest_${{ env.ARCH_TAG }}"
-          echo "VERSION_TAG=$(docker run --rm --entrypoint cat "${{ env.REPO }}/${{ env.IMAGE }}:latest_${{ env.ARCH_TAG }}" /CONTAINER_VERSION)" >> $GITHUB_ENV
+          docker pull "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest_${{ env.ARCH_TAG }}"
+          echo "VERSION_TAG=$(docker run --rm --entrypoint cat "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest_${{ env.ARCH_TAG }}" /CONTAINER_VERSION)" >> $GITHUB_ENV
 
       # Show version from "latest"
       - name: Show latest image version
         run: |
-          echo "${{ env.REPO }}/${{ env.IMAGE }}:latest contains version: ${{ env.VERSION_TAG }}"
+          echo "ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest contains version: ${{ env.VERSION_TAG }}"
 
       # Build version specific
       - name: Build & Push - version specific
