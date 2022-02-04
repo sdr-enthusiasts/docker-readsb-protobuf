@@ -11,4 +11,7 @@ jobs:
     name: dispatch_received
     runs-on: ubuntu-latest
     steps:
-      - run: echo "RECEIVED!"
+      - env:
+          MESSAGE: ${{ github.event.client_payload.message }}
+        run: |
+          echo "RECEIVED: $MESSAGE"
