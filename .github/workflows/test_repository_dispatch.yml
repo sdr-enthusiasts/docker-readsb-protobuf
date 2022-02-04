@@ -5,24 +5,19 @@ name: Test Dispatch (receive)
 on:
   workflow_dispatch:
     inputs:
-      source_repo:
+      reason:
         required: true
-        description: 'Name of source repository'
-      source_workflow:
-        required: true
-        description: 'Name of source workflow'
+        description: 'Reason for running this workflow'
 
 jobs:
   test:
     name: dispatch_received
     if: |
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.source_repo != '' &&
-      github.event.inputs.source_workflow != ''
+      github.event.inputs.reason != '' &&
     runs-on: ubuntu-latest
     steps:
       - env:
-          INPUTS_SOURCE_REPO: ${{ github.event.inputs.source_repo }}
-          INPUTS_SOURCE_WORKFLOW: ${{ github.event.inputs.source_workflow }}
+          INPUTS_REASON: ${{ github.event.inputs.reason }}
         run: |
-          echo "RECEIVED DISPATCH FROM: $INPUTS_SOURCE_REPO $INPUTS_SOURCE_WORKFLOW"
+          echo "RECEIVED DISPATCH: $INPUTS_REASON"
