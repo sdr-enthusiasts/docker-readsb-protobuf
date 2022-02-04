@@ -3,6 +3,7 @@
 name: Test Dispatch (receive)
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       reason:
@@ -11,7 +12,9 @@ on:
 
 jobs:
   test:
-    name: dispatch_received
+    name: Workflow Dispatch
+    # only run this step if workflow dispatch triggered
+    # log the reason the workflow dispatch was triggered
     if: |
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.reason != ''
@@ -20,4 +23,4 @@ jobs:
       - env:
           INPUTS_REASON: ${{ github.event.inputs.reason }}
         run: |
-          echo "RECEIVED DISPATCH: $INPUTS_REASON"
+          echo "Workflow dispatch reason: $INPUTS_REASON"
