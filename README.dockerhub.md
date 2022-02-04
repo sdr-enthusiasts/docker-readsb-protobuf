@@ -1,7 +1,5 @@
-# mikenye/readsb-protobuf
+# sdr-enthusiasts/docker-readsb-protobuf
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mikenye/docker-readsb-protobuf/Deploy%20to%20Docker%20Hub)](https://github.com/mikenye/docker-readsb-protobuf/actions?query=workflow%3A%22Deploy+to+Docker+Hub%22)
-[![Docker Pulls](https://img.shields.io/docker/pulls/mikenye/readsb-protobuf.svg)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mikenye/readsb-protobuf/latest)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
 
@@ -25,18 +23,18 @@ This image will configure a software-defined radio (SDR) to receive and decode M
 * `mikenye/adsb-to-influxdb` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualisation with [Grafana](https://grafana.com) and/or other tools
 * Any other tools that can receive Beast, BeastReduce, Basestation or the raw data feed from `readsb` or `dump1090` and their variants
 
-bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only RTL2832U as outlined above), but support for the devices is compiled in. If you have the hardware and would be willing to test, please [open an issue on GitHub](https://github.com/mikenye/docker-readsb-protobuf/issues).
+bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only RTL2832U as outlined above), but support for the devices is compiled in. If you have the hardware and would be willing to test, please [open an issue on GitHub](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/issues).
 
 ## Readme
 
-The README for this container is too long for Dockerhub. Please [view the README on this image's GitHub repository](https://github.com/mikenye/docker-readsb-protobuf/blob/main/README.md).
+The README for this container is too long for Dockerhub. Please [view the README on this image's GitHub repository](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/blob/main/README.md).
 
 ## Getting help
 
-Please feel free to [open an issue on the project's GitHub](https://github.com/mikenye/docker-readsb-protobuf/issues).
+Please feel free to [open an issue on the project's GitHub](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/issues).
 
 I also have a [Discord channel](https://discord.gg/sTf9uYF), feel free to [join](https://discord.gg/sTf9uYF) and converse.
 
 ## Changelog
 
-See the project's [commit history](https://github.com/mikenye/docker-readsb-protobuf/commits/main).
+See the project's [commit history](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/commits/main).

@@ -1,7 +1,5 @@
 # sdr-enthusiasts/readsb-protobuf
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mikenye/docker-readsb-protobuf/Push)](https://github.com/mikenye/docker-readsb-protobuf/actions?query=workflow%3A%22Push%22)
-[![Docker Pulls](https://img.shields.io/docker/pulls/mikenye/readsb-protobuf.svg)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mikenye/readsb-protobuf/latest)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
 
@@ -78,7 +76,7 @@ Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-F
 
 ## Supported tags and respective Dockerfiles
 
-* `latest` should always contain the latest released versions of `rtl-sdr`, `bladeRF`, `libiio`, `libad9361-iio` and `readsb`. This image is built nightly from the [`main` branch](https://github.com/mikenye/docker-readsb-protobuf) [`Dockerfile`](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/blob/main/Dockerfile) for all supported architectures.
+* `latest` should always contain the latest released versions of `rtl-sdr`, `bladeRF`, `libiio`, `libad9361-iio` and `readsb`. This image is built nightly from the [`main` branch](https://github.com/sdr-enthusiasts/docker-readsb-protobuf) [`Dockerfile`](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/blob/main/Dockerfile) for all supported architectures.
 * `latest_nohealthcheck` is the same as the `latest` version above. However, this version has the docker healthcheck removed. This is done for people running platforms (such as [Nomad](https://www.nomadproject.io)) that don't support manually disabling healthchecks, where healthchecks are not wanted.
 * Specific version and architecture tags are available if required, however these are not regularly updated. It is generally recommended to run `latest`.
 
@@ -160,7 +158,7 @@ docker run \
  -e READSB_NET_ENABLE=true \
  -v readsbpb_autogain:/run/autogain \
  -v readsbpb_rrd:/run/collectd \
- mikenye/readsb-protobuf
+ ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
 ```
 
 For example:
@@ -190,7 +188,7 @@ docker run \
  -e READSB_NET_ENABLE=true \
  -v readsbpb_autogain:/run/autogain \
  -v readsbpb_rrd:/run/collectd \
- mikenye/readsb-protobuf
+ ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
 ```
 
 Alternatively, you could pass through the entire USB bus with `--device /dev/bus/usb:/dev/bus/usb`, but please understand the security implications of doing so.
@@ -212,7 +210,7 @@ volumes:
 services:
 
   readsb:
-    image: mikenye/readsb-protobuf
+    image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
     tty: true
     container_name: readsb
     hostname: readsb
@@ -588,7 +586,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
 ```yml
 ...
   readsb:
-    image: mikenye/readsb-protobuf:latest
+    image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
     tty: true
     container_name: readsb
     hostname: readsb
@@ -620,7 +618,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
       - readsbpb_autogain:/run/autogain
 
   mlathub:
-    image: mikenye/readsb-protobuf:latest
+    image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
     tty: true
     container_name: mlathub
     hostname: mlathub
@@ -811,13 +809,13 @@ Every RTL-SDR dongle will have a small frequency error as it is cheaply mass pro
 To estimate your RTL-SDR's PPM, you can:
 
 * Stop the `readsb` container if it is running (freeing up the RTL-SDR for use)
-* Running `docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb mikenye/readsb-protobuf:latest`. This takes about 30 minutes.
+* Running `docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest`. This takes about 30 minutes.
 * Updating your `readsb` container with the suggested PPM value
 
 Example output is as follows:
 
 ```text
-$ docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb mikenye/readsb-protobuf:latest
+$ docker run --rm -it --entrypoint /scripts/estimate_rtlsdr_ppm.sh --device /dev/bus/usb ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
 
 Running rtl_test -p for 30 minutes
 

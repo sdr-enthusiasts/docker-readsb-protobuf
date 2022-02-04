@@ -5,10 +5,11 @@ on:
   pull_request:
     branches:
       - main
-      # only run linter if the deploy action does NOT contain dockerfile updates. This is because the
-      # deploy action, which will run if the docker files are changed, already does linting
+      # only run these linters if markdown / yaml is updated
     paths:
-      - '!Dockerfile**'
+      - '**.md'
+      - '**.MD'
+      - '**.yml'
 
 jobs:
   yamllint:
