@@ -7,7 +7,7 @@ on:
   # Build and deploy the image on pushes to main/master branch
   push:
     # Only publish on push to main branch
-    branches: 
+    branches:
       - main
     # Don't trigger if it's just a documentation update
     paths-ignore:
@@ -104,7 +104,7 @@ jobs:
       # Patch dockerfile to remove healthcheck
       - name: Patch Dockerfile to remove healthcheck
         run: sed '/^HEALTHCHECK /d' < Dockerfile > Dockerfile.nohealthcheck
-      
+
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
         uses: docker/build-push-action@v2
@@ -164,7 +164,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      
+
       # Set up QEMU for multi-arch builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -178,7 +178,7 @@ jobs:
       - name: Get image architecture suffix
         run: |
           echo "ARCH_TAG=$(echo '${{ matrix.docker-platform }}' | cut -d '/' -f2- | tr -s '/' '_')" >> $GITHUB_ENV
-      
+
       # Show archictecture suffix
       - name: Show image architecture suffix
         run: |
@@ -195,7 +195,7 @@ jobs:
           push: true
           tags: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest_${{ env.ARCH_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
-      
+
       # Get version from "latest"
       - name: Get latest image version
         run: |
@@ -222,7 +222,7 @@ jobs:
       # Patch dockerfile to remove healthcheck
       - name: Patch Dockerfile to remove healthcheck
         run: sed '/^HEALTHCHECK /d' < Dockerfile > Dockerfile.nohealthcheck
-      
+
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
         uses: docker/build-push-action@v2
@@ -234,7 +234,7 @@ jobs:
           push: true
           tags: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest_nohealthcheck_${{ env.ARCH_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
-      
+
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
         uses: docker/build-push-action@v2

@@ -1,7 +1,8 @@
+---
 version: 2
 
 updates:
-# check for updated docker image and will create pull request
+  # check for updated docker image and will create pull request
   - package-ecosystem: "docker"
     directory: "/"
     schedule:

@@ -74,12 +74,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Test autogain script
-      run: |
-        docker build -t readsb_autogain_testing_base .
-        docker build -f Dockerfile.autogain_testing -t readsb_autogain_testing .
-        time docker run --rm --no-healthcheck readsb_autogain_testing
+      - uses: actions/checkout@v2
+      - name: Test autogain script
+        run: |
+          docker build -t readsb_autogain_testing_base .
+          docker build -f Dockerfile.autogain_testing -t readsb_autogain_testing .
+          time docker run --rm --no-healthcheck readsb_autogain_testing
 
   deploy_dockerhub_multiarch:
     name: Deploy (Multi-Arch)
@@ -132,7 +132,7 @@ jobs:
       - name: Patch Dockerfile to remove healthcheck
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: sed '/^HEALTHCHECK /d' < Dockerfile > Dockerfile.nohealthcheck
-      
+
       # Build nohealthcheck
       - name: Test Build nohealthcheck
         if: steps.changed-files-specific.outputs.any_changed == 'true'
