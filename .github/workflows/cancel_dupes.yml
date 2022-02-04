@@ -1,9 +1,15 @@
+---
+
+# Cancels duplicate github actions when superseded
+
 name: Cancelling Duplicates
 on:
   workflow_run:
     workflows:
       - 'Pull Request'
-      - 'Push'
+      - 'Deploy to Docker Hub'
+      - 'Deploy to ghcr.io'
+      - 'Linting (Non-Image)'
     types: ['requested']
 
 jobs:
