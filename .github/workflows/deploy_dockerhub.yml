@@ -1,9 +1,11 @@
-name: Pull Request
+---
+name: Deploy to Docker Hub
 
 on:
-
-  # Test build/deploy on PRs to main/master
-  pull_request:
+  # Enable manual running of action if necessary
+  workflow_dispatch:
+  # Build and deploy the image on pushes to main/master branch
+  push:
     # Only publish on push to main branch
     branches:
       - main
@@ -16,23 +18,18 @@ on:
       - '.gitignore'
       - '.dockerignore'
 
+# Set workflow-wide environment variables
+#  - REPO: repo name on dockerhub
+#  - IMAGE: image name on dockerhub
+env:
+  REPO: mikenye
+  IMAGE: readsb-protobuf
+
 jobs:
 
-  linting-shellcheck:
-    name: Linting (shellcheck)
+  hadolint:
+    name: Run hadolint against docker files
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Pull koalaman/shellcheck:stable Image
-        run: docker pull koalaman/shellcheck:stable
-      - name: Run Shellcheck against shell scripts
-        run: docker run --rm -i -v "$PWD:/mnt" koalaman/shellcheck:stable $(find . -type f -exec grep -m1 -l -E '^#!.*sh.*' {} \; | grep -v '/.git/')
-
-  linting-hadolint:
-    name: Linting (hadolint)
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
       - name: Pull hadolint/hadolint:latest Image
@@ -40,45 +37,10 @@ jobs:
       - name: Run hadolint against Dockerfiles
         run: docker run --rm -i -v "$PWD":/workdir --workdir /workdir --entrypoint hadolint hadolint/hadolint --ignore DL3003 --ignore DL3006 --ignore DL3010 --ignore DL4001 --ignore DL3007 --ignore DL3008 --ignore SC2068 --ignore DL3007 --ignore SC1091 --ignore DL3013 --ignore DL3010 $(find . -type f -iname "Dockerfile*")
 
-  linting-markdownlint:
-    name: Linting (markdownlint)
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Pull markdownlint/markdownlint:latest Image
-        run: docker pull markdownlint/markdownlint:latest
-      - name: Run markdownlint against *.md files
-        run: docker run --rm -i -v "$(pwd)":/workdir --workdir /workdir markdownlint/markdownlint:latest --rules ~MD013,~MD033,~MD026,~MD002,~MD022 $(find . -type f -iname '*.md' | grep -v '/.git/')
-
-  test-autogain:
-    name: Test autogain script
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Test autogain script
-      run: |
-        docker build -t readsb_autogain_testing_base .
-        docker build -f Dockerfile.autogain_testing -t readsb_autogain_testing .
-        time docker run --rm --no-healthcheck readsb_autogain_testing
-
   deploy_dockerhub_multiarch:
     name: Deploy (Multi-Arch)
+    needs: [hadolint]
     runs-on: ubuntu-latest
-    needs:
-      - linting-shellcheck
-      - linting-hadolint
-      - linting-markdownlint
-      - test-autogain
-
-    # Set job-wide environment variables
-    #  - REPO: repo name on dockerhub
-    #  - IMAGE: image name on dockerhub
-    env:
-      REPO: mikenye
-      IMAGE: readsb-protobuf
-    
     steps:
 
       # Check out our code
@@ -87,16 +49,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Set up QEMU for multi-arch builds
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
       # Log into docker hub (so we can push images)
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Set up QEMU for multi-arch builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
 
       # Set up buildx for multi platform builds
       - name: Set up Docker Buildx
@@ -111,7 +73,7 @@ jobs:
           file: ./Dockerfile
           no-cache: true
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm/v6,linux/arm64
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:latest
 
       # Get version from "latest"
@@ -131,24 +93,24 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          no-cache: true
+          no-cache: false
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm/v6,linux/arm64
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:${{ env.VERSION_TAG }}
 
       # Patch dockerfile to remove healthcheck
       - name: Patch Dockerfile to remove healthcheck
         run: sed '/^HEALTHCHECK /d' < Dockerfile > Dockerfile.nohealthcheck
-      
+
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
-          no-cache: true
+          no-cache: false
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm/v6,linux/arm64
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:latest_nohealthcheck
 
       # Build version specific _nohealthcheck
@@ -157,19 +119,14 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
-          no-cache: true
+          no-cache: false
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm/v6,linux/arm64
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:${{ env.VERSION_TAG }}_nohealthcheck
 
   deploy_dockerhub_single_arch:
     name: Deploy
     runs-on: ubuntu-latest
-    needs:
-      - linting-shellcheck
-      - linting-hadolint
-      - linting-markdownlint
-      - test-autogain
     strategy:
       matrix:
         docker-platform:
@@ -193,7 +150,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       # Set up QEMU for multi-arch builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -214,7 +171,7 @@ jobs:
       - name: Get image architecture suffix
         run: |
           echo "ARCH_TAG=$(echo '${{ matrix.docker-platform }}' | cut -d '/' -f2- | tr -s '/' '_')" >> $GITHUB_ENV
-      
+
       # Show archictecture suffix
       - name: Show image architecture suffix
         run: |
@@ -228,9 +185,9 @@ jobs:
           file: ./Dockerfile
           no-cache: true
           platforms: ${{ matrix.docker-platform }}
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:latest_${{ env.ARCH_TAG }}
-      
+
       # Get version from "latest"
       - name: Get latest image version
         run: |
@@ -248,33 +205,33 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          no-cache: true
+          no-cache: false
           platforms: ${{ matrix.docker-platform }}
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:${{ env.VERSION_TAG }}_${{ env.ARCH_TAG }}
 
       # Patch dockerfile to remove healthcheck
       - name: Patch Dockerfile to remove healthcheck
         run: sed '/^HEALTHCHECK /d' < Dockerfile > Dockerfile.nohealthcheck
-      
+
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
-          no-cache: true
+          no-cache: false
           platforms: ${{ matrix.docker-platform }}
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:latest_nohealthcheck_${{ env.ARCH_TAG }}
-      
+
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
-          no-cache: true
+          no-cache: false
           platforms: ${{ matrix.docker-platform }}
-          push: false
+          push: true
           tags: ${{ env.REPO }}/${{ env.IMAGE }}:${{ env.VERSION_TAG }}_nohealthcheck_${{ env.ARCH_TAG }}
