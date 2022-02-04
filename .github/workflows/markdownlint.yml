@@ -11,7 +11,6 @@ on:
       - '**.MD'
 
 jobs:
-  
   markdownlint:
     name: Run markdownlint against markdown files
     runs-on: ubuntu-latest
