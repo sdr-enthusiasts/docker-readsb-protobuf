@@ -14,7 +14,7 @@ jobs:
     name: dispatch_received
     if: |
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.reason != '' &&
+      github.event.inputs.reason != ''
     runs-on: ubuntu-latest
     steps:
       - env:
