@@ -7,8 +7,7 @@ on:
   workflow_run:
     workflows:
       - 'Pull Request'
-      - 'Deploy to Docker Hub'
-      - 'Deploy to ghcr.io'
+      - 'Deploy'
       - 'Linting (Non-Image)'
     types: ['requested']
 

@@ -40,7 +40,8 @@ jobs:
       github.event.inputs.reason != ''
     runs-on: ubuntu-latest
     steps:
-      - env:
+      - name: Log dispatch reason
+        env:
           INPUTS_REASON: ${{ github.event.inputs.reason }}
         run: |
           echo "Workflow dispatch reason: $INPUTS_REASON"
