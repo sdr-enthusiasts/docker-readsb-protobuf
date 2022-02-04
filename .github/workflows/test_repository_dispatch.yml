@@ -4,6 +4,13 @@ name: Test Dispatch (receive)
 
 on:
   workflow_dispatch:
+    inputs:
+      source_repo:
+        required: true
+        description: 'Name of source repository'
+      source_workflow:
+        required: true
+        description: 'Name of source workflow'
 
 jobs:
   test:
@@ -11,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - env:
-          INPUTS_TRIGGERED_FROM: ${{ github.event.inputs.triggered_from }}
+          INPUTS_SOURCE_REPO: ${{ github.event.inputs.source_repo }}
+          INPUTS_SOURCE_WORKFLOW: ${{ github.event.inputs.source_workflow }}
         run: |
-          echo "RECEIVED DISPATCH FROM: $INPUTS_TRIGGERED_FROM"
+          echo "RECEIVED DISPATCH FROM: $INPUTS_SOURCE_REPO $INPUTS_SOURCE_WORKFLOW"
