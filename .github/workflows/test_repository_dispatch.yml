@@ -17,8 +17,8 @@ jobs:
     name: dispatch_received
     if: |
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.source_repo != "" &&
-      github.event.inputs.source_workflow != ""
+      github.event.inputs.source_repo != '' &&
+      github.event.inputs.source_workflow != ''
     runs-on: ubuntu-latest
     steps:
       - env:
