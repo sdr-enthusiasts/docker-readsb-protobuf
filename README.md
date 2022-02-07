@@ -1,4 +1,4 @@
-# sdr-enthusiasts/readsb-protobuf
+# sdr-enthusiasts/docker-readsb-protobuf
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mikenye/readsb-protobuf/latest)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
@@ -31,7 +31,7 @@ Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-F
 
 ## Table of Contents
 
-* [sdr-enthusiasts/readsb-protobuf](#sdr-enthusiastsreadsb-protobuf)
+* [sdr-enthusiasts/docker-readsb-protobuf](#sdr-enthusiastsdocker-readsb-protobuf)
   * [Note for Users running 32-bit Debian Buster-based OSes on ARM](#note-for-users-running-32-bit-debian-buster-based-oses-on-arm)
   * [Table of Contents](#table-of-contents)
   * [Supported tags and respective Dockerfiles](#supported-tags-and-respective-dockerfiles)
