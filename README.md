@@ -478,6 +478,7 @@ These variables control the sending of flight data and readsb metrics to [Influx
 | `INFLUXDB_V2_BUCKET` | Required if `INFLUXDB_V2` is set, bucket must already exist in your InfluxDB v2 instance. | Unset |
 | `INFLUXDB_V2_ORG` | Required if `INFLUXDB_V2` is set. | Unset |
 | `INFLUXDB_V2_TOKEN` | Required if `INFLUXDB_V2` is set. | Unset |
+| `INFLUXDB_SKIP_AIRCRAFT` | Set to any value to skip publishing aircraft data to InfluxDB to minimize bandwidth and database size. | Unset |
 
 ### Prometheus Options
 
