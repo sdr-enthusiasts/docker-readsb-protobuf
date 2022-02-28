@@ -1,0 +1,72 @@
+---
+
+name: Check container software versions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * *"
+
+env:
+  GHCR_IMAGE: ${{ github.repository }}:latest
+  GHCR_REGISTRY: ghcr.io
+  WORKFLOW_FILE_TO_TRIGGER: deploy.yml
+  WORKFLOW_AUTH_TOKEN: ${{ secrets.GH_PAT_MIKENYE }}
+
+jobs:
+
+  version_in_container:
+    name: Check versions in 'latest' image
+    runs-on: ubuntu-latest
+    outputs:
+      currverhash: ${{ steps.current-version.outputs.currverhash }}
+    steps:
+      - name: Get versions from ${{ env.GHCR_IMAGE }}
+        id: current-version
+        run: |
+          set -x
+          docker run --rm --entrypoint cat ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE }} /VERSIONS
+          echo "::set-output name=currverhash::$(docker run --rm --entrypoint md5sum ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE }} /VERSIONS)"
+
+  latest_version:
+    name: Check latest versions
+    runs-on: ubuntu-latest
+    outputs:
+      latestverhash: ${{ steps.latest-version.outputs.latestverhash }}
+    steps:
+      - name: Build image
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          load: true
+          tags: local_image_for_versions:latest
+      - name: Get versions from newly built image
+        id: latest-version
+        run: |
+          set -x
+          docker run --rm --entrypoint cat local_image_for_versions /VERSIONS
+          echo "::set-output name=latestverhash::$(docker run --rm --entrypoint md5sum local_image_for_versions /VERSIONS)"
+
+  display_versions:
+    name: Display versions
+    needs: [version_in_container, latest_version]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display versions
+        run: |
+          echo "version hash in current latest image = ${{ needs.version_in_container.outputs.currverhash }}"
+          echo "version hash in image just built = ${{ needs.latest_version.outputs.latestverhash }}"
+          echo "will a deployment be triggered = ${{ needs.version_in_container.outputs.currverhash != needs.latest_version.outputs.latestverhash }}"
+
+  trigger_deploy:
+    name: Trigger deployment of image
+    needs: [version_in_container, latest_version]
+    if: ${{ needs.version_in_container.outputs.currverhash != needs.latest_version.outputs.latestverhash }}
+    runs-on: ubuntu-latest
+    env:
+      WORKFLOW_REASON: "triggered via check_versions.yml in ${{ github.repository }}"
+    steps:
+      - name: Trigger ${{ env.WORKFLOW_FILE }} in ${{ env.WORKFLOW_REPO }}
+        run: |
+          echo "$WORKFLOW_AUTH_TOKEN" | gh auth login --with-token
+          gh workflow run --ref main --repo "${{ github.repository }}" "${{ env.WORKFLOW_FILE_TO_TRIGGER }}" -f reason="$WORKFLOW_REASON"
