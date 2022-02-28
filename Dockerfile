@@ -1,4 +1,13 @@
+# Declare the telegraf image so we can copy telegraf binary out of it,
+# and avoid headache of having to add apt key / apt repo and/or build from src.
+FROM telegraf AS telegraf
+RUN touch /tmp/.nothing
+
+# Build final image
 FROM ghcr.io/sdr-enthusiasts/docker-baseimage:readsb-full
+
+# Copy telegraf
+COPY --from=telegraf /usr/bin/telegraf /usr/bin/telegraf
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     ###########################################################################
@@ -112,6 +121,7 @@ RUN set -x && \
     # See: https://discussions.flightaware.com/t/setting-frequency-offset-or-exact-frequency-ppm/15812/6
     git clone https://github.com/steve-m/kalibrate-rtl.git "/src/kalibrate-rtl" && \
     pushd "/src/kalibrate-rtl" && \
+    echo "kalibrate-rtl $(git log | head -1 | tr -s ' ' '_')" >> /VERSIONS && \
     ./bootstrap && \
     ./configure && \
     make all install && \
@@ -177,15 +187,11 @@ RUN set -x && \
     # set up auto-gain file structure
     mkdir -p "/run/autogain" && \
     chown readsb "/run/autogain" && \
-    # Install telegraf
-    curl --location --silent -o - https://repos.influxdata.com/influxdb.key | apt-key add - && \
-    source /etc/os-release && \
-    echo "deb https://repos.influxdata.com/debian $VERSION_CODENAME stable" > /etc/apt/sources.list.d/influxdb.list && \
-    apt-get update && \
-    apt-get install --no-install-recommends -y telegraf && \
-    mv -v /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.original && \
+    # Configure telegraf
+    mkdir -p /etc/telegraf/telegraf.d && \
     mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
     rmdir /etc/telegraf.readsb && \
+    echo "telegraf --version" >> /VERSIONS && \
     # Update readsb webapp databases
     # attempt download of aircrafts.json
     curl \
