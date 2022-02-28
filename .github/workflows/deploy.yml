@@ -91,7 +91,7 @@ jobs:
           context: .
           file: ./Dockerfile
           no-cache: true
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:latest
 
@@ -113,7 +113,7 @@ jobs:
           context: .
           file: ./Dockerfile
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:${{ env.VERSION_TAG }}
 
@@ -128,7 +128,7 @@ jobs:
           context: .
           file: ./Dockerfile.nohealthcheck
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:latest_nohealthcheck
 
@@ -139,7 +139,7 @@ jobs:
           context: .
           file: ./Dockerfile.nohealthcheck
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}/${{ env.DOCKERHUB_IMAGE }}:${{ env.VERSION_TAG }}_nohealthcheck
 
@@ -153,7 +153,6 @@ jobs:
           - linux/amd64
           - linux/arm64
           - linux/arm/v7
-          - linux/i386
 
     steps:
 
@@ -291,7 +290,7 @@ jobs:
           context: .
           file: ./Dockerfile
           no-cache: true
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ghcr.io/${{ env.GHCR_IMAGE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
@@ -314,7 +313,7 @@ jobs:
           context: .
           file: ./Dockerfile
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ghcr.io/${{ env.GHCR_IMAGE }}:${{ env.VERSION_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -330,7 +329,7 @@ jobs:
           context: .
           file: ./Dockerfile.nohealthcheck
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ghcr.io/${{ env.GHCR_IMAGE }}:latest_nohealthcheck
           labels: ${{ steps.meta.outputs.labels }}
@@ -342,7 +341,7 @@ jobs:
           context: .
           file: ./Dockerfile.nohealthcheck
           no-cache: false
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ghcr.io/${{ env.GHCR_IMAGE }}:${{ env.VERSION_TAG }}_nohealthcheck
           labels: ${{ steps.meta.outputs.labels }}
@@ -357,7 +356,6 @@ jobs:
           - linux/amd64
           - linux/arm64
           - linux/arm/v7
-          - linux/i386
 
     steps:
 
