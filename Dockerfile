@@ -188,7 +188,7 @@ RUN set -x && \
     mkdir -p "/run/autogain" && \
     chown readsb "/run/autogain" && \
     # Configure telegraf
-    mkdir -p /etc/telegraf && \
+    mkdir -p /etc/telegraf/telegraf.d && \
     mv -v /etc/telegraf.readsb/telegraf.conf /etc/telegraf/telegraf.conf && \
     rmdir /etc/telegraf.readsb && \
     echo "telegraf --version" >> /VERSIONS && \
