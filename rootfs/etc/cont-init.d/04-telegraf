@@ -107,6 +107,7 @@ fi
   echo "  \"bash /scripts/telegraf_input_readsb_protoc_range.sh\","
   echo "]"
   echo "interval = \"60s\""
+  echo "timeout = \"10s\""
   echo "name_override = \"polar_range\""
   echo "data_format = \"influx\""
 } > "$INPUT_READSB_PROTOC_RANGE_DATA"
