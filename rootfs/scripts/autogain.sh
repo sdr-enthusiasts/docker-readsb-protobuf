@@ -506,7 +506,7 @@ function autogain_change_into_state () {
     # $1 = state name (init)
     # $2 = seconds until next check
     # -----
-    
+
     # Set state to $1 (state name)
     echo "$1" > "$AUTOGAIN_STATE_FILE"
     logger "Entering auto-gain stage: $1"
@@ -539,7 +539,7 @@ function autogain_change_into_state () {
         # We should already be at max gain, check to make sure (maybe user wants to re-run autogain from scratch)
         if [[ $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") == $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE") ]]; then
             logger_debug "Gain set to: $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
-        
+
         # If not at max gain, we should be, so set it
         else
             logger_debug "Setting gain to maximum $(cat "$AUTOGAIN_MAX_GAIN_VALUE_FILE") dB"
@@ -833,8 +833,8 @@ function autogain_finish_gainlevel_init() {
     # $1 = set to anything to go to the next gain level if needed
     # -----
     logger_debug "Entering: autogain_finish_state_init"
-    # Set review time 
-    increase_review_timestamp
+    # Set review time
+    increase_review_timestamp "$AUTOGAIN_INITIAL_PERIOD"
 
     # Gather statistics for the current gain level
     update_stats_files
@@ -850,7 +850,7 @@ function autogain_finish_gainlevel_init() {
         best_gain=$(rank_gain_levels)
 
         # Inform user
-        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."
 
         # Block below commented out, as max & min gains should be set via adjust_minimum_gain_if_required/adjust_maximum_gain_if_required
         #
@@ -886,10 +886,10 @@ function autogain_finish_gainlevel_init() {
 
 function autogain_finish_gainlevel_finetune() {
     # $1 = set to anything to go to the next gain level if needed
-    # -----    
+    # -----
     logger_debug "Entering: autogain_finish_state_finetune"
-    # Set review time 
-    increase_review_timestamp
+    # Set review time
+    increase_review_timestamp "$AUTOGAIN_FINETUNE_PERIOD"
 
     # Gather statistics for the current gain level
     update_stats_files
@@ -905,11 +905,11 @@ function autogain_finish_gainlevel_finetune() {
         best_gain=$(rank_gain_levels)
 
         # Inform user
-        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."                            
+        logger "Auto-gain stage '$(cat "$AUTOGAIN_STATE_FILE")' complete. Best gain figure appears to be: $best_gain dB."
 
         # Switch to best gain
         set_readsb_gain "$best_gain"
-        
+
         # Store original stats files for later review
         archive_stats_files
 
