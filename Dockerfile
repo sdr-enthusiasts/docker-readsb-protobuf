@@ -128,6 +128,7 @@ RUN set -x && \
     popd && \
     # readsb - Deploy webapp.
     ln -s /etc/lighttpd/conf-available/01-setenv.conf /etc/lighttpd/conf-enabled/01-setenv.conf && \
+    ln -s /etc/lighttpd/conf-available/87-cachebust.conf /etc/lighttpd/conf-enabled/87-cachebust.conf && \
     ln -s /etc/lighttpd/conf-available/89-readsb.conf /etc/lighttpd/conf-enabled/89-readsb.conf && \
     ln -s /etc/lighttpd/conf-available/88-readsb-statcache.conf /etc/lighttpd/conf-enabled/88-readsb-statcache.conf && \
     # Healthcheck stuff
@@ -150,9 +151,6 @@ RUN set -x && \
     chmod -R 755 "/var/lib/collectd" && \
     chown readsb "/var/lib/collectd" && \
     chown -R readsb: "/usr/share/readsb" && \
-    mkdir -p "/run/readsb" && \
-    chmod -R 755 "/run/readsb" && \
-    chown -R readsb: "/run/readsb" && \
     touch "/etc/default/readsb" && \
     chown -R readsb: "/etc/default/readsb" && \
     # lighttpd configuration - PID file location + permissions.
