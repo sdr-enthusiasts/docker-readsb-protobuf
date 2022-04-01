@@ -158,7 +158,7 @@ docker run \
  -e READSB_NET_ENABLE=true \
  -v readsbpb_autogain:/run/autogain \
  -v readsbpb_rrd:/run/collectd \
- --tmpfs=/run:exec,size=32M \
+ --tmpfs=/run:exec,size=64M \
  --tmpfs=/var/log:size=32M \
  ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
 ```
@@ -190,7 +190,7 @@ docker run \
  -e READSB_NET_ENABLE=true \
  -v readsbpb_autogain:/run/autogain \
  -v readsbpb_rrd:/run/collectd \
- --tmpfs=/run:exec,size=32M \
+ --tmpfs=/run:exec,size=64M \
  --tmpfs=/var/log:size=32M \
  ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
 ```
@@ -242,7 +242,7 @@ services:
       - readsbpb_rrd:/run/collectd
       - readsbpb_autogain:/run/autogain
     tmpfs:
-      - /run/readsb:size=32M
+      - /run/readsb:size=64M
       - /var/log:size=32M
 
 ```
@@ -626,7 +626,7 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
       - readsbpb_rrd:/run/collectd
       - readsbpb_autogain:/run/autogain
     tmpfs:
-      - /run/readsb:size=32M
+      - /run/readsb:size=64M
       - /var/log:size=32M
 
   mlathub:

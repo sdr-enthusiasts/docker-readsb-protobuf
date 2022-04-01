@@ -151,6 +151,9 @@ RUN set -x && \
     chmod -R 755 "/var/lib/collectd" && \
     chown readsb "/var/lib/collectd" && \
     chown -R readsb: "/usr/share/readsb" && \
+    mkdir -p "/run/readsb" && \
+    chmod -R 755 "/run/readsb" && \
+    chown -R readsb: "/run/readsb" && \
     touch "/etc/default/readsb" && \
     chown -R readsb: "/etc/default/readsb" && \
     # lighttpd configuration - PID file location + permissions.
