@@ -1,0 +1,4 @@
+#!/usr/bin/execlineb -P
+background {
+  /scripts/usbreset.sh
+}

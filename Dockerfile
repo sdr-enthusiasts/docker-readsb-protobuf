@@ -110,6 +110,8 @@ RUN set -x && \
     KEPT_PACKAGES+=(libfftw3-3) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
     TEMP_PACKAGES+=(libusb-1.0-0-dev) && \
+    # Packages for usbreset
+    KEPT_PACKAGES+=(usbutils) && \
     # Install packages.
     apt-get update && \
     apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
