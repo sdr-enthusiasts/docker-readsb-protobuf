@@ -6,7 +6,7 @@ if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
       sleep 30
       USBNAME=RTL2838
       LSUSB=$(lsusb | grep --ignore-case $USBNAME)
-      DEVICE=$(echo $LSUSB | cut --delimiter=' ' --fields='2')"/"$(echo $LSUSB | cut --delimiter=' ' --fields='4' | tr --delete ":")
-      usbreset $DEVICE
+      DEVICE=$(echo "$LSUSB" | cut --delimiter=' ' --fields='2')"/"$(echo "$LSUSB" | cut --delimiter=' ' --fields='4' | tr --delete ":")
+      usbreset "$DEVICE"
     fi
 fi
