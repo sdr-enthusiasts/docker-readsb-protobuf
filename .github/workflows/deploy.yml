@@ -86,7 +86,7 @@ jobs:
 
       # Build "latest"
       - name: Build & Push - latest
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -108,7 +108,7 @@ jobs:
 
       # Build version specific
       - name: Build & Push - version specific
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -123,7 +123,7 @@ jobs:
 
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -134,7 +134,7 @@ jobs:
 
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -190,7 +190,7 @@ jobs:
 
       # Build "latest"
       - name: Build & Push - latest
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -212,7 +212,7 @@ jobs:
 
       # Build version specific
       - name: Build & Push - version specific
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -227,7 +227,7 @@ jobs:
 
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -238,7 +238,7 @@ jobs:
 
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -285,7 +285,7 @@ jobs:
 
       # Build "latest"
       - name: Build & Push - latest
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -308,7 +308,7 @@ jobs:
 
       # Build version specific
       - name: Build & Push - version specific
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -324,7 +324,7 @@ jobs:
 
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -336,7 +336,7 @@ jobs:
 
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -401,7 +401,7 @@ jobs:
 
       # Build "latest"
       - name: Build & Push - latest
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -424,7 +424,7 @@ jobs:
 
       # Build version specific
       - name: Build & Push - version specific
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -440,7 +440,7 @@ jobs:
 
       # Build "latest_nohealthcheck"
       - name: Build & Push - latest nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
@@ -452,7 +452,7 @@ jobs:
 
       # Build version specific _nohealthcheck
       - name: Build & Push - version specific nohealthcheck
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
