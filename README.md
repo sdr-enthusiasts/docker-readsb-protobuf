@@ -13,13 +13,13 @@ Support for all supported SDRs is compiled in. Builds and runs on x86_64, arm32v
 
 This image will configure a software-defined radio (SDR) to receive and decode Mode-S/ADSB/TIS data from aircraft within range, for use with other services such as:
 
-* `mikenye/adsbexchange` to feed ADSB data to [adsbexchange.com](https://adsbexchange.com)
-* `mikenye/adsbhub` to feed ADSB data into [adsbhub.org](https://adsbhub.org/)
-* `mikenye/piaware` to feed ADSB data into [flightaware.com](https://flightaware.com)
-* `mikenye/fr24feed` to feed ADSB data into [flightradar24.com](https://www.flightradar24.com)
+* [`sdr-enthusiasts/docker-adsbexchange`](https://github.com/sdr-enthusiasts/docker-adsbexchange) to feed ADSB data to [adsbexchange.com](https://adsbexchange.com)
+* [`sdr-enthusiasts/docker-adsbhub`](https://github.com/sdr-enthusiasts/docker-adsbhub) to feed ADSB data into [adsbhub.org](https://adsbhub.org/)
+* [`sdr-enthusiasts/docker-piaware`](https://github.com/sdr-enthusiasts/docker-piaware) to feed ADSB data into [flightaware.com](https://flightaware.com)
+* [`sdr-enthusiasts/docker-flightradar24`](https://github.com/sdr-enthusiasts/docker-flightradar24) to feed ADSB data into [flightradar24.com](https://www.flightradar24.com)
 * [`sdr-enthusiasts/docker-radarbox`](https://github.com/sdr-enthusiasts/docker-radarbox) to feed ADSB data into [radarbox.com](https://www.radarbox.com)
-* `mikenye/opensky-network` to feed ADSB data into [opensky-network.org](https://opensky-network.org/)
-* `mikenye/planefinder` to feed ADSB data into [planefinder.net](https://planefinder.net/)
+* [`sdr-enthusiasts/docker-opensky-network`](https://github.com/sdr-enthusiasts/docker-opensky-network) to feed ADSB data into [opensky-network.org](https://opensky-network.org/)
+* [`sdr-enthusiasts/docker-planefinder`](https://github.com/sdr-enthusiasts/docker-planefinder) to feed ADSB data into [planefinder.net](https://planefinder.net/)
 * `mikenye/adsb-to-influxdb` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualisation with [Grafana](https://grafana.com) and/or other tools
 * Any other tools that can receive Beast, BeastReduce, Basestation or the raw data feed from `readsb` or `dump1090` and their variants
 
