@@ -204,9 +204,6 @@ An example `docker-compose.yml` file is below:
 ```yaml
 version: '2.0'
 
-networks:
-  adsbnet:
-
 volumes:
   readsbpb_rrd:
   readsbpb_autogain:
@@ -224,8 +221,6 @@ services:
     ports:
       - 8080:8080
       - 30005:30005
-    networks:
-      - adsbnet
     environment:
       - TZ=Australia/Perth
       - READSB_DCFILTER=true
