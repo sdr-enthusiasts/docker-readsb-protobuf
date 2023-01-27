@@ -22,6 +22,11 @@ READSB_CMD+=("--write-output=/run/readsb")
 
 ##### GENERAL OPTIONS #####
 
+# Handle "--aggressive"
+if [[ -n "$READSB_AGGRESSIVE" ]]; then
+    READSB_CMD+=("--aggressive")
+fi
+
 # Handle "--dcfilter"
 if [[ -n "$READSB_DCFILTER" ]]; then
     READSB_CMD+=("--dcfilter")
@@ -114,6 +119,11 @@ fi
 # Handle "--no-modeac-auto"
 if [[ -n "$READSB_NO_MODEAC_AUTO" ]]; then
     READSB_CMD+=("--no-modeac-auto")
+fi
+
+# Handle "--preamble-threshold=<n>"
+if [[ -n "$READSB_PREAMBLE_THRESHOLD" ]]; then
+    READSB_CMD+=("--preamble-threshold=$READSB_PREAMBLE_THRESHOLD")
 fi
 
 # Handle "--rx-location-accuracy=<n>"
