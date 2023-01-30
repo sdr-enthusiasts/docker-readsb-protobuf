@@ -304,6 +304,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 
 | Variable | Description | Controls which `readsb` option | Default |
 |----------|-------------|--------------------------------|---------|
+| `READSB_AGGRESSIVE` | Set to any value to enable two-bit CRC error correction | `--aggressive` | Unset |
 | `READSB_DCFILTER` | Set to any value to apply a 1Hz DC filter to input data (requires more CPU) | `--dcfilter` | Unset |
 | `READSB_DEVICE_TYPE` | If using an SDR, set this to `rtlsdr`, `bladerf`, `modesbeast`, `gnshulc` or `plutosdr` depending on the model of your SDR. If not using an SDR, leave un-set. | `--device-type=<type>` | Unset |
 | `READSB_ENABLE_BIASTEE` | Set to any value to enable bias tee on supporting interfaces | `--enable-biastee` | Unset |
@@ -321,6 +322,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 | `READSB_NO_CRC_CHECK` | Set this to any value to disable messages with invalid CRC (discouraged) | `--no-crc-check` | Unset |
 | `READSB_NO_FIX` | Set this to any value to disable CRC single-bit error correction | `--no-fix` | Unset |
 | `READSB_NO_MODEAC_AUTO` | Set this to any value and Mode A/C won't be enabled automatically if requested by a Beast connection | `--no-modeac-auto` | Unset |
+| `READSB_PREAMBLE_THRESHOLD` | Preamble threshold, lower means more CPU usage (valid range: `40` - `400`) | `--preamble-threshold=<n>` | `58` |
 | `READSB_RX_LOCATION_ACCURACY` | Accuracy of receiver location in metadata: `0`=no location, `1`=approximate, `2`=exact | `--rx-location-accuracy=<n>` | Unset |
 | `READSB_STATS_EVERY` | Number of seconds between showing and resetting stats. | `--stats-every=<sec>` | Unset |
 | `READSB_STATS_RANGE` | Set this to any value to collect range statistics for polar plot. | `--stats-range` |  Unset |
