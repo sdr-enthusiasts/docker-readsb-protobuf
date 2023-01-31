@@ -35,7 +35,7 @@ jobs:
       latestverhash: ${{ steps.latest-version.outputs.latestverhash }}
     steps:
       - name: Build image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: false
           load: true
