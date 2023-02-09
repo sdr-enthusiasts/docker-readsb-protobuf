@@ -101,7 +101,7 @@ jobs:
       # Build
       - name: Test Build
         if: steps.changed-files-specific.outputs.any_changed == 'true'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -117,7 +117,7 @@ jobs:
       # Build nohealthcheck
       - name: Test Build nohealthcheck
         if: steps.changed-files-specific.outputs.any_changed == 'true'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile.nohealthcheck
