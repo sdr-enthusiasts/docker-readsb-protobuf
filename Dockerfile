@@ -225,7 +225,7 @@ RUN set -x && \
         'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
         && \
     # remove performance graphs not supported in a container environment
-    cp -v /usr/share/readsb/html/graphs/index.html /usr/share/readsb/html/graphs/index.html.orig && \
+    cp -v /usr/share/readsb/html/graphs/index.html /usr/share/readsb/html/graphs/index.orig.html && \
     pup < /usr/share/readsb/html/graphs/index.html > /usr/share/readsb/html/graphs/index.html.new && \
     sed -i 's/<img\ id="system-disk-iops-image".*/<p>\&nbsp;<\/p>/' /usr/share/readsb/html/graphs/index.html.new && \
     sed -i 's/<img\ id="system-disk-octets-image".*/<p>\&nbsp;<\/p>/' /usr/share/readsb/html/graphs/index.html.new && \
