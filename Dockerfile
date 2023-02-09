@@ -110,6 +110,8 @@ RUN set -x && \
     KEPT_PACKAGES+=(libfftw3-3) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
     TEMP_PACKAGES+=(libusb-1.0-0-dev) && \
+    # Required to parse html during build
+    TEMP_PACKAGES+=(pup) && \
     # Install packages.
     apt-get update && \
     apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
@@ -222,6 +224,12 @@ RUN set -x && \
         -z /usr/share/readsb/html/db/types.json \
         'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
         && \
+    # remove performance graphs not supported in a container environment
+    mv -v /usr/share/readsb/html/graphs/index.html /usr/share/readsb/html/graphs/index.html.orig && \
+    pup < /usr/share/readsb/html/graphs/index.html.orig > /usr/share/readsb/html/graphs/index.html && \
+    sed -i '/<img\ id="system-disk-iops-image"/d' /usr/share/readsb/html/graphs/index.html && \
+    sed -i '/<img\ id="system-disk-octets-image"/d' /usr/share/readsb/html/graphs/index.html && \
+    rm -v /usr/share/readsb/html/graphs/index.html.orig && \
     # Clean-up.
     apt-get remove -y ${TEMP_PACKAGES[@]} && \
     apt-get autoremove -y && \
