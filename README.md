@@ -56,7 +56,7 @@ Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-F
     * [InfluxDB Options](#influxdb-options)
     * [Prometheus Options](#prometheus-options)
   * [Ports](#ports)
-  * [Paths & Volumes](#paths--volumes)
+  * [Paths \& Volumes](#paths--volumes)
   * [Auto-Gain system](#auto-gain-system)
     * [Initialisation Stage](#initialisation-stage)
     * [Fine-Tuning Stage](#fine-tuning-stage)
@@ -64,6 +64,7 @@ Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-F
     * [State/Log/Stats Files](#statelogstats-files)
     * [Forcing auto-gain to re-run from scratch](#forcing-auto-gain-to-re-run-from-scratch)
   * [Advanced Usage: Creating an MLAT Hub](#advanced-usage-creating-an-mlat-hub)
+  * [PlutoSDR Support](#plutosdr-support)
   * [Grafana Dashboard](#grafana-dashboard)
   * [InfluxDB Schema](#influxdb-schema)
     * [`aircraft` Measurement](#aircraft-measurement)
@@ -693,6 +694,21 @@ In this example:
 * `tar1090` pulls these MLAT results (via `MLATHOST`) so MLAT positions show up in tar1090's web interface.
 
 **You must make absolutely certain that `READSB_FORWARD_MLAT` is NOT set on your main `readsb` instance!** This is why we perform the MLAT hub functionality in a separate instance of `readsb`. You do not want to cross-contaminate MLAT results between feeders. Doing so will almost certainly result in your MLAT results being rejected, and/or may end up getting you ignored/banned from feeding services.
+
+## PlutoSDR Support
+
+If using PlutoSDR, you will need to configure a host entry for `pluto.local`.
+
+If using `docker run`, you can add the command line argument `--add-host pluto.local:<IP_OF_PLUTO_HOST>`.
+
+If using `docker compose`, you can add the following to the `readsb:` service definition:
+
+```yaml
+    extra_hosts:
+      - "pluto.local:<IP_OF_PLUTO_HOST>"
+```
+
+Replace `<IP_OF_PLUTO_HOST>` with the IP address of your PlutoSDR host.
 
 ## Grafana Dashboard
 
