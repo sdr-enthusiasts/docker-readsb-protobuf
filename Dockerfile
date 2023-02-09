@@ -225,11 +225,11 @@ RUN set -x && \
         'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
         && \
     # remove performance graphs not supported in a container environment
-    mv -v /usr/share/readsb/html/graphs/index.html /usr/share/readsb/html/graphs/index.html.orig && \
-    pup < /usr/share/readsb/html/graphs/index.html.orig > /usr/share/readsb/html/graphs/index.html && \
-    sed -i '/<img\ id="system-disk-iops-image"/d' /usr/share/readsb/html/graphs/index.html && \
-    sed -i '/<img\ id="system-disk-octets-image"/d' /usr/share/readsb/html/graphs/index.html && \
-    rm -v /usr/share/readsb/html/graphs/index.html.orig && \
+    cp -v /usr/share/readsb/html/graphs/index.html /usr/share/readsb/html/graphs/index.html.orig && \
+    pup < /usr/share/readsb/html/graphs/index.html > /usr/share/readsb/html/graphs/index.html.new && \
+    sed -i 's/<img\ id="system-disk-iops-image".*/<p>\&nbsp;<\/p>/' /usr/share/readsb/html/graphs/index.html.new && \
+    sed -i 's/<img\ id="system-disk-octets-image".*/<p>\&nbsp;<\/p>/' /usr/share/readsb/html/graphs/index.html.new && \
+    mv -v /usr/share/readsb/html/graphs/index.html.new /usr/share/readsb/html/graphs/index.html && \
     # Clean-up.
     apt-get remove -y ${TEMP_PACKAGES[@]} && \
     apt-get autoremove -y && \
