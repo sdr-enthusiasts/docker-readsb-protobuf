@@ -185,7 +185,7 @@ RUN set -x && \
     sed -i 's/^LoadPlugin curl.*//g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     # collectd configuration - remove syslog configuration from readsb config (as we'll be logging to stdout/container log).
     sed -i '/<Plugin syslog>/,/<\/Plugin>/d' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
-    # collectd configuration - change default disk to sda.
+    # collectd configuration - change default disk from mmcblk0 to add more standard disks.
     sed -i 's/Disk "mmcblk0"/Disk "mmcblk0"\n\tDisk "mmcblk1"\n\tDisk "sda"\n\tDisk "hda"/g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     # set up auto-gain file structure
     mkdir -p "/run/autogain" && \
