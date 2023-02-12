@@ -237,6 +237,7 @@ services:
     volumes:
       - readsbpb_rrd:/run/collectd
       - readsbpb_autogain:/run/autogain
+      - /proc/diskstats:/proc/diskstats:ro
     tmpfs:
       - /run/readsb:size=64M
       - /var/log:size=32M
