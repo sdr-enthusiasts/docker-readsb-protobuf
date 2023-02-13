@@ -93,14 +93,23 @@ Currently, this image should pull and run on the following architectures:
 
 Before this container will work properly, you must blacklist the kernel modules for the RTL-SDR USB device from the host's kernel.
 
-To do this, create a file `/etc/modprobe.d/blacklist-rtl2832.conf` containing the following:
+To do this, create a file `/etc/modprobe.d/blacklist-rtlsdr.conf` containing the following:
 
 ```shell
-# Blacklist RTL2832 so docker container readsb can use the device
+# Blacklist RTL-SDR devices from being loaded by the host
+# operating system so docker container guests can use the devices
 
-blacklist rtl2832
+blacklist dvb_core
+blacklist dvb_usb_rtl2832u
 blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_v2
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
 blacklist rtl2832_sdr
+blacklist rtl2838
+blacklist rtl8192cu
+blacklist rtl8xxxu
 ```
 
 Once this is done, you can plug in your RTL-SDR USB device and start the container.
@@ -115,9 +124,17 @@ rtlsdr: error opening the RTLSDR device: Device or resource busy
 If you get the error above even after blacklisting the kernel modules as outlined above, the modules may still be loaded. You can unload them by running the following commands:
 
 ```shell
-sudo rmmod rtl2832_sdr
+sudo rmmod dvb_core
+sudo rmmod dvb_usb_rtl2832u
 sudo rmmod dvb_usb_rtl28xxu
+sudo rmmod dvb_usb_v2
+sudo rmmod r820t
+sudo rmmod rtl2830
 sudo rmmod rtl2832
+sudo rmmod rtl2832_sdr
+sudo rmmod rtl2838
+sudo rmmod rtl8192cu
+sudo rmmod rtl8xxxu
 ```
 
 ## Identifying your SDR's device path
