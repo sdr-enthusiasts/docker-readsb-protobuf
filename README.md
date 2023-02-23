@@ -96,7 +96,7 @@ Before we can plug in our RTL-SDR dongle, we need to blacklist the kernel module
 To do this, we will create a blacklist file at `/etc/modprobe.d/blacklist-rtlsdr.conf` with the following command. While logged in as root, please copy and paste all lines at once, and press enter after to ensure the final line is given allowing it to run.
 
 ```shell
-tee /etc/modprobe.d/blacklist-rtlsdr.conf > /dev/null <<TEXT1
+sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf > /dev/null <<TEXT1
 # Blacklist host from loading modules for RTL-SDRs to ensure they
 # are left available for Docker guests
 blacklist dvb_core
@@ -147,17 +147,17 @@ rtlsdr: error opening the RTLSDR device: Device or resource busy
 If you get the error above even after blacklisting the kernel modules as outlined above, the modules may still be loaded. You can unload them by running the following commands:
 
 ```shell
-rmmod dvb_core
-rmmod dvb_usb_rtl2832u
-rmmod dvb_usb_rtl28xxu
-rmmod dvb_usb_v2
-rmmod r820t
-rmmod rtl2830
-rmmod rtl2832
-rmmod rtl2832_sdr
-rmmod rtl2838
-rmmod rtl8192cu
-rmmod rtl8xxxu
+sudo rmmod dvb_core
+sudo rmmod dvb_usb_rtl2832u
+sudo rmmod dvb_usb_rtl28xxu
+sudo rmmod dvb_usb_v2
+sudo rmmod r820t
+sudo rmmod rtl2830
+sudo rmmod rtl2832
+sudo rmmod rtl2832_sdr
+sudo rmmod rtl2838
+sudo rmmod rtl8192cu
+sudo rmmod rtl8xxxu
 ```
 
 ## Identifying your SDR's device path
