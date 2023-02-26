@@ -406,7 +406,7 @@ This variable allows you to configure outgoing connections. The variable takes a
   * `raw_out`: Raw output
   * `raw_in`: Raw input
   * `sbs_out`: SBS-format output
-  * `vrs_out`: SBS-format output
+  * `vrs_out`: VRS-format JSON output
 
 For example, to pull in MLAT results (so the performance graphs in the web interface show MLAT numbers), you could do the following:
 
