@@ -92,24 +92,24 @@ Currently, this image should pull and run on the following architectures:
 -----
 ## Prerequisites
 
-
-#### Kernel Module Configuration
+### Kernel Module Configuration
 
 **NOTE: If you used the [docker-install.sh](https://github.com/sdr-enthusiasts/docker-install) script, you can skip this section.**
 
 Before we can plug in our RTL-SDR dongle, we need to blacklist the kernel modules for the RTL-SDR USB device from being loaded into the host's kernel and taking ownership of the device.
 
 #### **There are three parts to this.**
-1. Blacklist modules from being directly loaded AND blacklist modules from being loaded as a dependency of other modules
-2. Unload any of our blacklisted modules from memory
-3. Updating the initramfs boot image to remove any references to our now blacklisted modules
+
+1.  Blacklist modules from being directly loaded AND blacklist modules from being loaded as a dependency of other modules
+2.  Unload any of our blacklisted modules from memory
+3.  Updating the initramfs boot image to remove any references to our now blacklisted modules
 
 ##### 1. Blacklist Modules
 To do this, we will create a blacklist file at `/etc/modprobe.d/blacklist-rtlsdr.conf` with the following command. While logged in as root, please copy and paste all lines at once, and press enter after to ensure the final line is given allowing it to run.
 
 ```bash
 
-sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf <<TEXT1
+sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf 2>/dev/null <<TEXT1
 # Blacklist host from loading modules for RTL-SDRs to ensure they
 # are left available for the Docker guest.
 
@@ -167,12 +167,15 @@ sudo rmmod rtl8192cu
 sudo rmmod rtl8xxxu
 
 ```
+
 ##### 3. Update the Boot Image
 
 Now we need to update our boot image to ensure any references to the modules we've blacklisted are removed
+
 ```bash
 update-initramfs -u
 ```
+
 This will take a minute or more depending on the speed of your system, and output lots of status message lines as it goes until it is finished.
 
 -----
@@ -183,7 +186,6 @@ Failure to do the steps above will result in the error below being spammed to th
 usb_claim_interface error -6
 rtlsdr: error opening the RTLSDR device: Device or resource busy
 ```
-
 
 ## Identifying your SDR's device path
 
