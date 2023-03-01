@@ -109,7 +109,7 @@ To do this, we will create a blacklist file at `/etc/modprobe.d/blacklist-rtlsdr
 
 ```bash
 
-sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf 2>/dev/null <<TEXT1
+sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf <<TEXT1
 # Blacklist host from loading modules for RTL-SDRs to ensure they
 # are left available for the Docker guest.
 
