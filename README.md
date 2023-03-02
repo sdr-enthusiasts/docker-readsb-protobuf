@@ -89,16 +89,30 @@ Currently, this image should pull and run on the following architectures:
 * ```arm32v7```, ```armv7l```: ARMv7 32-bit (Odroid HC1/HC2/XU4, RPi 2/3)
 * ```arm64v8```, ```aarch64```: ARMv8 64-bit (RPi 3B+/4)
 
+-----
 ## Prerequisites
+
+### Kernel Module Configuration
+
+**NOTE: If you used the [docker-install.sh](https://github.com/sdr-enthusiasts/docker-install) script, you can skip this section.**
 
 Before we can plug in our RTL-SDR dongle, we need to blacklist the kernel modules for the RTL-SDR USB device from being loaded into the host's kernel and taking ownership of the device.
 
+#### **There are three parts to this.**
+
+1. Blacklist modules from being directly loaded AND blacklist modules from being loaded as a dependency of other modules
+1. Unload any of our blacklisted modules from memory
+1. Updating the initramfs boot image to remove any references to our now blacklisted modules
+
+##### 1. Blacklist Modules
 To do this, we will create a blacklist file at `/etc/modprobe.d/blacklist-rtlsdr.conf` with the following command. While logged in as root, please copy and paste all lines at once, and press enter after to ensure the final line is given allowing it to run.
 
-```shell
-sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf > /dev/null <<TEXT1
+```bash
+
+sudo tee /etc/modprobe.d/blacklist-rtlsdr.conf <<TEXT1
 # Blacklist host from loading modules for RTL-SDRs to ensure they
-# are left available for Docker guests
+# are left available for the Docker guest.
+
 blacklist dvb_core
 blacklist dvb_usb_rtl2832u
 blacklist dvb_usb_rtl28xxu
@@ -133,20 +147,13 @@ install rtl8192cu /bin/false
 install rtl8xxxu /bin/false
 
 TEXT1
-```
-
-Once this is done, you can plug in your RTL-SDR USB device and start the container.
-
-Failure to do this will result in the error below being spammed to the container log.
 
 ```
-usb_claim_interface error -6
-rtlsdr: error opening the RTLSDR device: Device or resource busy
-```
 
-If you get the error above even after blacklisting the kernel modules as outlined above, the modules may still be loaded. You can unload them by running the following commands:
+##### 2. Unload Modules
+Next, ensure the modules are unloaded by running the following commands:
 
-```shell
+```bash
 sudo rmmod dvb_core
 sudo rmmod dvb_usb_rtl2832u
 sudo rmmod dvb_usb_rtl28xxu
@@ -158,6 +165,26 @@ sudo rmmod rtl2832_sdr
 sudo rmmod rtl2838
 sudo rmmod rtl8192cu
 sudo rmmod rtl8xxxu
+
+```
+
+##### 3. Update the Boot Image
+
+Now we need to update our boot image to ensure any references to the modules we've blacklisted are removed
+
+```bash
+update-initramfs -u
+```
+
+This will take a minute or more depending on the speed of your system, and output lots of status message lines as it goes until it is finished.
+
+-----
+
+Failure to do the steps above will result in the error below being spammed to the `readsb` container log.
+
+```text
+usb_claim_interface error -6
+rtlsdr: error opening the RTLSDR device: Device or resource busy
 ```
 
 ## Identifying your SDR's device path
