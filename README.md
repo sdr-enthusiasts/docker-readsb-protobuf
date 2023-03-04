@@ -154,17 +154,18 @@ TEXT1
 Next, ensure the modules are unloaded by running the following commands:
 
 ```bash
-sudo rmmod dvb_core
-sudo rmmod dvb_usb_rtl2832u
-sudo rmmod dvb_usb_rtl28xxu
-sudo rmmod dvb_usb_v2
-sudo rmmod r820t
-sudo rmmod rtl2830
-sudo rmmod rtl2832
-sudo rmmod rtl2832_sdr
-sudo rmmod rtl2838
-sudo rmmod rtl8192cu
-sudo rmmod rtl8xxxu
+
+sudo modprobe -r dvb_usb_rtl2832u
+sudo modprobe -r dvb_usb_rtl28xxu
+sudo modprobe -r dvb_usb_v2
+sudo modprobe -r dvb_core
+sudo modprobe -r r820t
+sudo modprobe -r rtl2830
+sudo modprobe -r rtl2832
+sudo modprobe -r rtl2832_sdr
+sudo modprobe -r rtl2838
+sudo modprobe -r rtl8192cu
+sudo modprobe -r rtl8xxxu
 
 ```
 
