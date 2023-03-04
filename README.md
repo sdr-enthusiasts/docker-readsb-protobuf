@@ -173,7 +173,7 @@ sudo rmmod rtl8xxxu
 Now we need to update our boot image to ensure any references to the modules we've blacklisted are removed
 
 ```bash
-update-initramfs -u
+sudo update-initramfs -u
 ```
 
 This will take a minute or more depending on the speed of your system, and output lots of status message lines as it goes until it is finished.
