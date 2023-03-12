@@ -187,6 +187,8 @@ RUN set -x && \
     sed -i '/<Plugin syslog>/,/<\/Plugin>/d' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     # collectd configuration - change default disk from mmcblk0 to add more standard disks.
     sed -i 's/Disk "mmcblk0"/Disk "mmcblk0"\n\tDisk "mmcblk1"\n\tDisk "sda"\n\tDisk "hda"/g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
+    # collectd configuration - add gain (using the file created by autogain start script and updates)
+    sed -i  's/<Chain "PostCache">/<Plugin table>\n\t<Table "\/tmp\/.gain_current">\n\t\tInstance localhost\n\t\tSeparator " "\n\t\t<Result>\n\t\t\tType gauge\n\t\t\tInstancePrefix "gain"\n\t\t\tValuesFrom 0\n\t\t<\/Result>\n\t<\/Table>\n<\/Plugin>\n\n<Chain "PostCache">/g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     # set up auto-gain file structure
     mkdir -p "/run/autogain" && \
     chown readsb "/run/autogain" && \
