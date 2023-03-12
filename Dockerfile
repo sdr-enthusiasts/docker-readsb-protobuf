@@ -190,10 +190,10 @@ RUN set -x && \
     # collectd configuration - add gain (using the file created by autogain start script and updates)
     sed -i  's/<Chain "PostCache">/<Plugin table>\n\t<Table "\/tmp\/.gain_current">\n\t\tInstance localhost\n\t\tSeparator " "\n\t\t<Result>\n\t\t\tType gauge\n\t\t\tInstancePrefix "gain"\n\t\t\tValuesFrom 0\n\t\t<\/Result>\n\t<\/Table>\n<\/Plugin>\n\n<Chain "PostCache">/g' /etc/collectd/collectd.conf.d/readsb.collectd.conf && \
     # graphs.sh - add required configuration for gain to be added to graphs
-    sed -i '/--vertical-label "dBFS"/ {N; s/--right-axis 1:0/--right-axis 1:42/}' /usr/share/readsb/graphs/graphs.sh
-    sed -i 's/"DEF:peak=$(check $2\/dbfs_max_signal.rrd):value:MAX" \\/"DEF:peak=$(check $2\/dbfs_max_signal.rrd):value:MAX" \\\n    "DEF:dgain=$(check \/var\/run\/collectd\/rrd\/localhost\/table-localhost\/gauge-gain.rrd):value:AVERAGE" \\/g' /usr/share/readsb/graphs/graphs.sh
-    sed -i 's/"CDEF:mes=median,UN,signal,median,IF" \\/"CDEF:mes=median,UN,signal,median,IF" \\\n\t\t"CDEF:gain=dgain,42,-" \\/g' /usr/share/readsb/graphs/graphs.sh
-    sed -i 's/"GPRINT:peak:MAX:%4.1lf\\c" \\/"GPRINT:peak:MAX:%4.1lf\\c" \\\n\t\t"LINE1:gain#$RED:Gain Level (RHS)\\:" \\\n\t\t"GPRINT:dgain:MAX:%4.1lf\\c" \\/g' /usr/share/readsb/graphs/graphs.sh
+    sed -i '/--vertical-label "dBFS"/ {N; s/--right-axis 1:0/--right-axis 1:42/}' /usr/share/readsb/graphs/graphs.sh && \
+    sed -i 's/"DEF:peak=$(check $2\/dbfs_max_signal.rrd):value:MAX" \\/"DEF:peak=$(check $2\/dbfs_max_signal.rrd):value:MAX" \\\n    "DEF:dgain=$(check \/var\/run\/collectd\/rrd\/localhost\/table-localhost\/gauge-gain.rrd):value:AVERAGE" \\/g' /usr/share/readsb/graphs/graphs.sh && \
+    sed -i 's/"CDEF:mes=median,UN,signal,median,IF" \\/"CDEF:mes=median,UN,signal,median,IF" \\\n\t\t"CDEF:gain=dgain,42,-" \\/g' /usr/share/readsb/graphs/graphs.sh && \
+    sed -i 's/"GPRINT:peak:MAX:%4.1lf\\c" \\/"GPRINT:peak:MAX:%4.1lf\\c" \\\n\t\t"LINE1:gain#$RED:Gain Level (RHS)\\:" \\\n\t\t"GPRINT:dgain:MAX:%4.1lf\\c" \\/g' /usr/share/readsb/graphs/graphs.sh && \
     # set up auto-gain file structure
     mkdir -p "/run/autogain" && \
     chown readsb "/run/autogain" && \
