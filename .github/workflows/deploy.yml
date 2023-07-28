@@ -7,6 +7,12 @@ on:
       reason:
         required: true
         description: "Reason for running this workflow"
+      use_test_image:
+        required: false
+        type: boolean
+        description: "Use base image testpr"
+        default: false
+
   push:
     branches:
       - main
