@@ -107,15 +107,15 @@ RUN set -x && \
     TEMP_PACKAGES+=(gnupg) && \
     # Requirements for kalibrate-rtl
     TEMP_PACKAGES+=(libtool) && \
-    KEPT_PACKAGES+=(libfftw3-3) && \
+    KEPT_PACKAGES+=(libfftw3-bin) && \
     TEMP_PACKAGES+=(libfftw3-dev) && \
     TEMP_PACKAGES+=(libusb-1.0-0-dev) && \
     # Install packages.
     apt-get update && \
     apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y --no-install-recommends \
-        ${KEPT_PACKAGES[@]} \
-        ${TEMP_PACKAGES[@]} \
-        && \
+    ${KEPT_PACKAGES[@]} \
+    ${TEMP_PACKAGES[@]} \
+    && \
     git config --global advice.detachedHead false && \
     # Build & install kalibrate-rtl
     # See: https://discussions.flightaware.com/t/setting-frequency-offset-or-exact-frequency-ppm/15812/6
@@ -138,15 +138,15 @@ RUN set -x && \
     # readsb - users/permissions/dirs.
     addgroup --system --gid 1000 readsb && \
     useradd \
-      --uid 1000 \
-      --system \
-      --home-dir /usr/share/readsb \
-      --no-create-home \
-      --no-user-group \
-      --gid 1000 \
-      --groups plugdev,dialout \
-      readsb \
-      && \
+    --uid 1000 \
+    --system \
+    --home-dir /usr/share/readsb \
+    --no-create-home \
+    --no-user-group \
+    --gid 1000 \
+    --groups plugdev,dialout \
+    readsb \
+    && \
     mkdir -p "/var/lib/collectd/rrd/localhost/readsb" && \
     chmod -R 755 "/var/lib/collectd" && \
     chown readsb "/var/lib/collectd" && \
@@ -205,32 +205,32 @@ RUN set -x && \
     # Update readsb webapp databases
     # attempt download of aircrafts.json
     curl \
-        --location \
-        -o /usr/share/readsb/html/db/aircrafts.json \
-        -z /usr/share/readsb/html/db/aircrafts.json \
-        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/aircrafts.json' \
-        && \
+    --location \
+    -o /usr/share/readsb/html/db/aircrafts.json \
+    -z /usr/share/readsb/html/db/aircrafts.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/aircrafts.json' \
+    && \
     # attempt download of dbversion.json
     curl \
-        --location \
-        -o /usr/share/readsb/html/db/dbversion.json \
-        -z /usr/share/readsb/html/db/dbversion.json \
-        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/dbversion.json' \
-        && \
+    --location \
+    -o /usr/share/readsb/html/db/dbversion.json \
+    -z /usr/share/readsb/html/db/dbversion.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/dbversion.json' \
+    && \
     # attempt download of operators.json
     curl \
-        --location \
-        -o /usr/share/readsb/html/db/operators.json \
-        -z /usr/share/readsb/html/db/operators.json \
-        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/operators.json' \
-        && \
+    --location \
+    -o /usr/share/readsb/html/db/operators.json \
+    -z /usr/share/readsb/html/db/operators.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/operators.json' \
+    && \
     # attempt download of types.json
     curl \
-        --location \
-        -o /usr/share/readsb/html/db/types.json \
-        -z /usr/share/readsb/html/db/types.json \
-        'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
-        && \
+    --location \
+    -o /usr/share/readsb/html/db/types.json \
+    -z /usr/share/readsb/html/db/types.json \
+    'https://github.com/Mictronics/readsb-protobuf/raw/dev/webapp/src/db/types.json' \
+    && \
     # Clean-up.
     apt-get remove -y ${TEMP_PACKAGES[@]} && \
     apt-get autoremove -y && \
