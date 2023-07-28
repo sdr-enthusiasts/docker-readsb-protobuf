@@ -48,8 +48,10 @@ jobs:
       - name: Log dispatch reason
         env:
           INPUTS_REASON: ${{ github.event.inputs.reason }}
+          INPUTS_USE_TEST_IMAGE: ${{ github.event.inputs.use_test_image }}
         run: |
           echo "Workflow dispatch reason: $INPUTS_REASON"
+          echo "Use test image: $INPUTS_USE_TEST_IMAGE"
 
   hadolint:
     name: Run hadolint against docker files
@@ -82,7 +84,7 @@ jobs:
       build_version_specific: ${{ github.event.inputs.use_test_image == 'false' }}
       build_platform_specific: ${{ github.event.inputs.use_test_image == 'false' }}
       build_nohealthcheck: ${{ github.event.inputs.use_test_image == 'false' }}
-      build_baseimage_url: readsb-full:readsb-full-test-pr
+      build_baseimage_url: readsb-full/readsb-full-test-pr
     secrets:
       ghcr_token: ${{ secrets.GITHUB_TOKEN }}
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
