@@ -85,6 +85,7 @@ jobs:
       build_baseimage_url: readsb-full:readsb-full-test-pr
     secrets:
       ghcr_token: ${{ secrets.GITHUB_TOKEN }}
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
   # deploy_dockerhub_multiarch:
   #   name: Deploy Docker Hub (Multi-Arch)
   #   needs: [hadolint]
