@@ -66,12 +66,12 @@ function is_tcp_connection_established() {
 # Only need to do this if networking is enabled
 if [[ -n "$READSB_NET_ENABLE" ]]; then
     if [[ -n "$READSB_NET_CONNECTOR" ]]; then
-        
+
         # Loop through each given net-connector
         IFS=';' read -r -a READSB_NET_CONNECTOR_ARRAY <<< "$READSB_NET_CONNECTOR"
         for NET_CONNECTOR_ELEMENT in "${READSB_NET_CONNECTOR_ARRAY[@]}"
         do
-            
+
             # Separate into IP / PORT
             NET_CONNECTOR_ELEMENT_IP=$(get_ip "$(echo "$NET_CONNECTOR_ELEMENT" | cut -d ',' -f 1)")
             NET_CONNECTOR_ELEMENT_PORT=$(echo "$NET_CONNECTOR_ELEMENT" | cut -d ',' -f 2)
@@ -86,7 +86,7 @@ if [[ -n "$READSB_NET_ENABLE" ]]; then
         done
     fi
 fi
-# If InfluxDB 
+# If InfluxDB
 if [[ -n "$INFLUXDBURL" ]]; then
     INFLUXDB_HOST=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\1;p')
     INFLUXDB_PORT=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\2;p')
@@ -140,10 +140,10 @@ services+=('readsb' 'readsbrrd' 'telegraf_socat_vrs_json' 'telegraf')
 for service in "${services[@]}"; do
     # Get number of non-zero service exits
     returnvalue=$(s6-svdt \
-                    -s "/run/s6/services/$service" | \
+                    -s "/run/s6/legacy-services/$service" | \
                     grep -cv 'exitcode 0')
     # Reset service death counts
-    s6-svdt-clear "/run/s6/services/$service"
+    s6-svdt-clear "/run/s6/legacy-services/$service"
     # Log healthy/unhealthy and exit abnormally if unhealthy
     if [[ "$returnvalue" -eq "0" ]]; then
         echo "abnormal death count for service $service is $returnvalue: HEALTHY"
