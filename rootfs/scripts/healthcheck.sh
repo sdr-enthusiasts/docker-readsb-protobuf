@@ -18,7 +18,7 @@ function get_ip() {
             >&2 echo "DEBUG: Already IP"
         fi
     # Attempt to resolve $1 into an IP address with getent
-    elif IP=$(getent hosts "$1" 2> /dev/null | cut -d ' ' -f 1 | grep -P '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'); then
+    elif IP=$(getent ahostsv4 "$1" 2> /dev/null | grep -P '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s+STREAM' | cut -d ' ' -f 1); then
         :
         if [[ -n "$VERBOSE_LOGGING" ]]; then
             >&2 echo "DEBUG: Got IP via getent"
@@ -66,12 +66,12 @@ function is_tcp_connection_established() {
 # Only need to do this if networking is enabled
 if [[ -n "$READSB_NET_ENABLE" ]]; then
     if [[ -n "$READSB_NET_CONNECTOR" ]]; then
-        
+
         # Loop through each given net-connector
         IFS=';' read -r -a READSB_NET_CONNECTOR_ARRAY <<< "$READSB_NET_CONNECTOR"
         for NET_CONNECTOR_ELEMENT in "${READSB_NET_CONNECTOR_ARRAY[@]}"
         do
-            
+
             # Separate into IP / PORT
             NET_CONNECTOR_ELEMENT_IP=$(get_ip "$(echo "$NET_CONNECTOR_ELEMENT" | cut -d ',' -f 1)")
             NET_CONNECTOR_ELEMENT_PORT=$(echo "$NET_CONNECTOR_ELEMENT" | cut -d ',' -f 2)
@@ -86,7 +86,7 @@ if [[ -n "$READSB_NET_ENABLE" ]]; then
         done
     fi
 fi
-# If InfluxDB 
+# If InfluxDB
 if [[ -n "$INFLUXDBURL" ]]; then
     INFLUXDB_HOST=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\1;p')
     INFLUXDB_PORT=$(echo "$INFLUXDBURL" | sed -rn 's;https{0,1}:\/\/(.*):([[:digit:]]+).*$;\2;p')
