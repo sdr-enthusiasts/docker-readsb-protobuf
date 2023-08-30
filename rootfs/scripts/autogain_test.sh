@@ -1,4 +1,4 @@
-#!/command/with-contenv bash
+#!/usr/bin/env bash
 #shellcheck shell=bash
 
 # This script is designed to test /scripts/autogain.sh.

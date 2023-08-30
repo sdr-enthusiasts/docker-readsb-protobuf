@@ -1,10 +1,16 @@
 FROM readsb_autogain_testing_base:latest
 
-COPY autogain_test_data/ /autogain_test_data/
+COPY autogain_test_data/stats.pb.test_data.tar.xz /autogain_test_data/stats.pb.test_data.tar.xz
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN pushd "/autogain_test_data" && \
-    tar xJvf ./stats.pb.test_data.tar.xz
+RUN set -xe && \
+    apt-get update && \
+    apt-get install xz-utils -y && \
+    pushd "/autogain_test_data" && \
+    ls -la && \
+    tar xJvf ./stats.pb.test_data.tar.xz && \
+    apt-get remove xz-utils -y && \
+    apt-get autoremove -y
 
 ENTRYPOINT [ "bash", "/scripts/autogain_test.sh" ]
