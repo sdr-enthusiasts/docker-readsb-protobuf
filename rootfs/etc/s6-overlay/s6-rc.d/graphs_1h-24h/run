@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /etc/s6-overlay/scripts/graphs_1h-24h

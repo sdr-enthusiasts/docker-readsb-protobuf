@@ -1,0 +1,48 @@
+#!/command/with-contenv bash
+#shellcheck shell=bash
+
+# If troubleshooting:
+if [[ -n "$DEBUG_LOGGING" ]]; then
+    set -x
+fi
+
+if [[ "$READSB_DEVICE_TYPE" == "rtlsdr" ]]; then
+    if [[ -n "$READSB_ENABLE_BIASTEE" ]]; then
+        # Wait for readsb service to be down
+        s6-svwait -D /run/service/readsb
+        pkill --signal 9 -ef "/usr/local/bin/readsb "
+        sleep 1
+        # Prepare temp file
+        biast_tempfile=$(mktemp)
+        # Attempt to get devices, use random serial so it's very unlikely we claim an SDR used by someone else
+        rtl_biast -d "$RANDOM$RANDOM" > "$biast_tempfile" 2>&1 || true
+        # Get number of devices
+        num_devices=$(sed -n 's/^Found\s\+\([0-9]\+\)\s\+device(s):\s*$/\1/p' "$biast_tempfile")
+        # If we have more than one device, we need a serial number
+        if [[ "$num_devices" -gt 1 ]]; then
+            if [[ -n "$READSB_RTLSDR_DEVICE" ]]; then
+                # For each line...
+                while read -r line; do
+                    # get device id for specific serial
+                    if echo "$line" | grep -oP '^([0-9]+):\s+(\w+),\s+(\w+),\s+SN:\s+([0-9]{1,8})\s*$' > /dev/null 2>&1; then
+                        device_id=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\1/p')
+                        device_manufacturer=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\2/p')
+                        device_model=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\3/p')
+                        device_serial=$(echo "$line" | sed -n 's/^\([0-9]\+\):\s\+\(\w\+\),\s\+\(\w\+\),\s\+SN:\s\+\([0-9]\{1,8\}\)\s*$/\4/p')
+
+                        if [[ "$device_serial" == "$READSB_RTLSDR_DEVICE" ]]; then
+                            echo "Disabling bias tee for device $device_id:  $device_manufacturer, $device_model, SN: $device_serial"
+                            # shellcheck disable=SC2016
+                            rtl_biast -d "$device_id" -b 0 2>&1 | stdbuf -o0 awk '{print "[rtl_biast] " $0}'
+                        fi
+                    fi
+                done < "$biast_tempfile"
+            fi
+        else
+            echo "Disabling bias tee..."
+            # shellcheck disable=SC2016
+            rtl_biast -b 0 2>&1 | stdbuf -o0 awk '{print "[rtl_biast] " $0}'
+        fi
+        rm "$biast_tempfile"
+    fi
+fi

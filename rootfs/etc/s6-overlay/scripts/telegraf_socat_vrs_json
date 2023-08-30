@@ -1,0 +1,31 @@
+#!/command/with-contenv bash
+#shellcheck shell=bash
+
+# Connect VRS port to Telegraf port
+
+
+set -eo pipefail
+
+if [ -z "$INFLUXDB_SKIP_AIRCRAFT" ] && { [ -n "$INFLUXDBURL" ] || [ -n "$ENABLE_PROMETHEUS" ]; } then
+
+  SOCAT_BIN="$(which socat)"
+  SOCAT_CMD=(-ls)
+
+  if [ "$VERBOSE_LOGGING" = "true" ]; then
+    SOCAT_CMD+=("-d -d")
+  fi
+
+  if [[ -z "$READSB_NET_VRS_PORT" ]]; then
+    READSB_NET_VRS_PORT="33333"
+  fi
+
+  SOCAT_CMD+=("TCP:localhost:${READSB_NET_VRS_PORT}")
+  SOCAT_CMD+=("TCP:localhost:33334")
+
+  # shellcheck disable=SC2016
+  "${SOCAT_BIN}" "${SOCAT_CMD[@]}" \
+    2>&1 | stdbuf -o0 awk '{print "[telegraf_vrs_connector] " $0}'
+
+else
+  sleep 86400
+fi

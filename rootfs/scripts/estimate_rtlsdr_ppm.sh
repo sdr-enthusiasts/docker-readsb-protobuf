@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/command/with-contenv bash
 
 # Define colors
 WHITE='\033[1;37m'
