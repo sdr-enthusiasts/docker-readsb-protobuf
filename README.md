@@ -513,7 +513,7 @@ Where the default value is "Unset", `readsb`'s default will be used.
 
 | Variable | Description | Controls which `readsb` option | Default |
 |----------|-------------|--------------------------------|---------|
-| `READSBRRD_STEP` | Interval in seconds to feed data into RRD files. | `60` |
+| `READSB_RRD_STEP` | Interval in seconds to feed data into RRD files. | `60` |
 | `READSB_GRAPH_SIZE` | Set graph size, possible values: `small`, `default`, `large`, `huge`, `custom`. | `default` |
 | `READSB_GRAPH_ALL_LARGE` | Make the small graphs as large as the big ones by setting to `yes`. | `no` |
 | `READSB_GRAPH_FONT_SIZE` | Font size (relative to graph size). | `10.0` |
