@@ -18,7 +18,7 @@ function get_ip() {
             >&2 echo "DEBUG: Already IP"
         fi
     # Attempt to resolve $1 into an IP address with getent
-    elif IP=$(getent hosts "$1" 2> /dev/null | cut -d ' ' -f 1); then
+    elif IP=$(getent ahostsv4 "$1" 2> /dev/null | grep -P '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s+STREAM' | cut -d ' ' -f 1); then
         :
         if [[ -n "$VERBOSE_LOGGING" ]]; then
             >&2 echo "DEBUG: Got IP via getent"
