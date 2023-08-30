@@ -11,6 +11,7 @@ RUN set -xe && \
     ls -la && \
     tar xJvf ./stats.pb.test_data.tar.xz && \
     apt-get remove xz-utils -y && \
-    apt-get autoremove -y
+    apt-get autoremove -y && \
+    rm -rf /src/* /tmp/* /var/lib/apt/lists/*
 
 ENTRYPOINT [ "bash", "/scripts/autogain_test.sh" ]
