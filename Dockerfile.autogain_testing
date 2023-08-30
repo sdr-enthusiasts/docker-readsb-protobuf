@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN set -xe && \
     apt-get update && \
-    apt-get install xz-utils -y && \
+    apt-get install xz-utils -y --no-install-recommends && \
     pushd "/autogain_test_data" && \
     ls -la && \
     tar xJvf ./stats.pb.test_data.tar.xz && \
