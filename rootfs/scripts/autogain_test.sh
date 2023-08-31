@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#shellcheck shell=bash
 
 # This script is designed to test /scripts/autogain.sh.
 #
@@ -6,7 +7,7 @@
 # in rapid succession, by fudging the timestamp.
 #
 # If there is any output to stderr that is not listed in ALLOWED_STDERR, the test fails.
-# 
+#
 
 # Colors
 NOCOLOR='\033[0m'

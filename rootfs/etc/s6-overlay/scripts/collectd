@@ -1,0 +1,18 @@
+#!/command/with-contenv bash
+#shellcheck shell=bash
+
+if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
+
+    /usr/sbin/collectd -t -T -f -C /etc/collectd/collectd.conf || exit 0
+
+    set -eo pipefail
+
+    #shellcheck disable=SC2016
+    /usr/sbin/collectd \
+        -C /etc/collectd/collectd.conf \
+        -f \
+        2>&1 | stdbuf -o0 awk '{print "[collectd] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+
+else
+    sleep 86400
+fi
