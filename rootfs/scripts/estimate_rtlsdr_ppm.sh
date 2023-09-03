@@ -1,4 +1,4 @@
-#!/command/with-contenv bash
+#!/usr/bin/env bash
 #shellcheck shell=bash
 
 # Define colors
