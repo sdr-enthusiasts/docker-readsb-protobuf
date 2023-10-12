@@ -58,7 +58,7 @@ AUTOGAIN_STATS_TRACKS_NEW_FILE="/run/autogain/autogain_stats.tracks_new"
 AUTOGAIN_INTERVAL_FILE="/run/autogain/autogain_interval"
 # results for init stage
 AUTOGAIN_RESULTS_FILE="/run/autogain/autogain_results"
-# previos stats files - allows stats to persist through container restart 
+# previous stats files - allows stats to persist through container restart
 AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE="/run/autogain/autogain_stats_current.max_distance"
 AUTOGAIN_STATS_PREVIOUS_LOCAL_STRONG_MSGS_FILE="/run/autogain/autogain_stats_current.local_strong_msgs"
 AUTOGAIN_STATS_PREVIOUS_LOCAL_ACCEPTED_MSGS_FILE="/run/autogain/autogain_stats_current.local_accepted"
@@ -125,7 +125,7 @@ function increase_review_timestamp() {
     else
         num_seconds=3600
     fi
-    
+
     local new_timestamp
     new_timestamp="$(($(get_current_timestamp) + num_seconds))"
     logger_debug "Setting review timestamp to: $new_timestamp"
@@ -533,7 +533,7 @@ function autogain_change_into_state () {
         echo "$AUTOGAIN_MIN_GAIN_VALUE" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE"
     fi
 
-    # If state isnt finished, then set gain to max
+    # If state isn't finished, then set gain to max
     if [[ ! "$1" == "finished" ]]; then
 
         # We should already be at max gain, check to make sure (maybe user wants to re-run autogain from scratch)
@@ -571,7 +571,7 @@ function update_stats_files () {
     # number of tracks_new
     echo "$current_gain_setting $(get_tracks_new)" >> "$AUTOGAIN_STATS_TRACKS_NEW_FILE"
 
-    logger_debug "Exiting: update_stats_files"   
+    logger_debug "Exiting: update_stats_files"
 }
 
 function store_current_counters () {
@@ -586,7 +586,7 @@ function store_current_counters () {
 
         # longest range (max_distance_in_metres)
         get_max_distance_in_metres > "$AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE"
-        
+
         # percentage strong messages (local_strong_signals/local_samples_processed)
         get_local_strong_signals > "$AUTOGAIN_STATS_PREVIOUS_LOCAL_STRONG_MSGS_FILE"
 
@@ -607,7 +607,7 @@ function store_current_counters () {
 
     fi
 
-    logger_debug "Exiting: store_current_counters"   
+    logger_debug "Exiting: store_current_counters"
 }
 
 function update_offsets_after_container_restart () {
@@ -615,7 +615,7 @@ function update_offsets_after_container_restart () {
     # -----
 
     logger_debug "Entering: update_offsets_after_container_restart"
-    
+
     # update offset files
     if [[ -e "$AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE" ]]; then
         cp "$AUTOGAIN_STATS_PREVIOUS_MAX_DISTANCE_FILE" "$AUTOGAIN_STATS_OFFSET_MAX_DISTANCE_FILE"
@@ -641,7 +641,7 @@ function update_offsets_after_container_restart () {
 function rank_gain_levels () {
     # Ranks the gain levels to determine a suitable range
     # -----
-    
+
     logger_debug "Entering: rank_gain_levels"
 
     # Prepare gain_rank dictionary with all tested gain levels
@@ -754,7 +754,7 @@ function adjust_minimum_gain_if_required() {
             # Gain levels in this block are above max strong messages
             count_below_min=0
             logger_debug "adjust_minimum_gain_if_required: Found gain level with % strong messages above max at gain level $gain_level dB"
-        fi                            
+        fi
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
     # If we've seen two consecutive "below minimums" after the "good" region, we've most likely gone past the "good" region.
     # Bring up the minimum gain
@@ -802,7 +802,7 @@ function adjust_maximum_gain_if_required() {
             # Gain levels in this block are above max strong messages
             count_above_max=0
             logger_debug "adjust_maximum_gain_if_required: Found gain level with % strong messages below min at gain level $gain_level dB"
-        fi                            
+        fi
     done < "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
     # Put order of the file back to normal
     sort -n -r -o "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE" "$AUTOGAIN_STATS_PERCENT_STRONG_MSGS_FILE"
@@ -921,7 +921,7 @@ function autogain_finish_gainlevel_finetune() {
         # echo "$best_gain" > "$AUTOGAIN_MAX_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
         # echo "$best_gain" > "$AUTOGAIN_MIN_GAIN_VALUE_FILE" # we can leave the max/min, finish doesn't use these
         autogain_change_into_state finished "$AUTOGAIN_FINISHED_PERIOD"
-    
+
     # otherwise, reduce gain if required
     else
         if [[ -n "$1" ]]; then
@@ -956,13 +956,13 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
         # If the container has been restarted, but we were previously running autogain
         # Re-start from current state/gain
         logger "Container restart detected, resuming auto-gain state '$(cat "$AUTOGAIN_STATE_FILE")' with gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB"
-        
+
         # Update offsets from before container restarted
         update_offsets_after_container_restart
 
         # Create running file so we can tell if the container has been restarted and we need to resume a previous run...
         touch "$AUTOGAIN_RUNNING_FILE"
-        
+
         if [[ ! "$(cat "$AUTOGAIN_STATE_FILE")" == "finished" ]]; then
             increase_review_timestamp_after_container_restart
         fi
@@ -984,35 +984,35 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                     # If stats we require aren't yet available, extend runtime.
                     if ! are_required_stats_available; then
                         logger "Insufficient data available, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
-                        # Set review time 
+                        # Set review time
                         increase_review_timestamp
-                    
+
                     # If stats we require are available, then process.
                     else
 
                         # Make sure we've received at least 500000 accepted messages:
                         if ! sufficient_local_accepted "$AUTOGAIN_INITIAL_MSGS_ACCEPTED"; then
                             logger "Insufficient messages received for accurate measurement, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
-                            
-                            # Set review time 
+
+                            # Set review time
                             increase_review_timestamp
 
                             # Limit number of retries to 24 hours
                             if [[ "$(get_current_timestamp)" -gt "$(($(cat "$AUTOGAIN_CURRENT_TIMESTAMP_FILE") + 86400))" ]]; then
-                                
+
                                 # Finish init state
                                 autogain_finish_gainlevel_init
 
                             fi
-                        
+
                         else
 
                             # Finish init state or reduce gain
                             autogain_finish_gainlevel_init reduce
-                            
+
                         fi
                     fi
-                    
+
                 # otherwise, do nothing
                 else
                     #logger_verbose "Not time to do anything yet..."
@@ -1033,7 +1033,7 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                     # If stats we require aren't yet available, extend runtime.
                     if ! are_required_stats_available; then
                         logger "Insufficient data available, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
-                        # Set review time 
+                        # Set review time
                         increase_review_timestamp
 
                     # If stats we require are available, then process.
@@ -1042,8 +1042,8 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
                         # Make sure we've received at least 500000 accepted messages:
                         if ! sufficient_local_accepted "$AUTOGAIN_FINETUNE_MSGS_ACCEPTED"; then
                             logger "Insufficient messages received for accurate measurement, extending runtime of gain $(cat "$AUTOGAIN_CURRENT_VALUE_FILE") dB."
-                            
-                            # Set review time 
+
+                            # Set review time
                             increase_review_timestamp
 
                             # Limit number of retries to 2 days
@@ -1054,13 +1054,13 @@ if [[ "$READSB_GAIN" == "autogain" ]]; then
 
                             fi
                         else
-                                                
+
                             # Finish finetune state
                             autogain_finish_gainlevel_finetune reduce
-                            
+
                         fi
                     fi
-                    
+
                 # otherwise, do nothing
                 else
                     #logger_verbose "Not time to do anything yet..."

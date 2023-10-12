@@ -38,7 +38,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
     # Wait 30 minutes
     sleep 1800
 
-    pushd /usr/share/readsb/graphs > /dev/null || exit 1 
+    pushd /usr/share/readsb/graphs > /dev/null || exit 1
 
     if [[ -e "/tmp/.next_graphs_7d" ]]; then
         run_graphs 7d
@@ -74,7 +74,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
 
     fi
 
-    popd > /dev/null || exit 1 
+    popd > /dev/null || exit 1
 
 else
     sleep 86400

@@ -1,5 +1,4 @@
 ---
-
 name: Check container software versions
 
 on:
@@ -14,7 +13,6 @@ env:
   WORKFLOW_AUTH_TOKEN: ${{ secrets.GH_PAT_MIKENYE }}
 
 jobs:
-
   version_in_container:
     name: Check versions in 'latest' image
     runs-on: ubuntu-latest

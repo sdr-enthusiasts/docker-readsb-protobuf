@@ -23,7 +23,7 @@ if [[ -z "$DISABLE_PERFORMANCE_GRAPHS" ]]; then
     ul_range_uat=
     export graph_size all_large font_size max_messages_line lwidth lheight swidth sheight
     export ul_message_rate ul_aircraft ul_tracks ul_range ul_maxima ul_rate_per_aircraft ul_adsb_cpu ul_range_uat
-    
+
     # make sure that /var/lib/collectd/rrd/localhost/readsb exists for readsbrrd to be able to write to it
     mkdir -p /var/lib/collectd/rrd/localhost/readsb
 

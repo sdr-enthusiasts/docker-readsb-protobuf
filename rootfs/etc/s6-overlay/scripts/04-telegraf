@@ -28,10 +28,10 @@ if [[ -n "$INFLUXDBURL" ]]; then
       echo "  bucket = \"${INFLUXDB_V2_BUCKET}\""
     else # else default to InfluxDB v1 output
       echo "[[outputs.influxdb]]"
-      
+
       # Add InfluxDB URL
       echo "  urls = [\"${INFLUXDBURL}\"]"
-      
+
       # Add InfluxDB v1 options.
       echo '  database = "readsb"'
       echo '  skip_database_creation = false'
@@ -84,7 +84,7 @@ if [[ -n "$READSB_GAIN" ]]; then
     } > "$INPUT_AUTOGAIN_FILE"
 
   fi
-  
+
 fi
 
 
@@ -186,7 +186,7 @@ if [[ -z "$INFLUXDB_SKIP_AIRCRAFT" ]]; then
     ## metric.
     #echo "json_time_key = \"PosTime\""
 
-    ## Time format is the time layout that should be used to interprete the
+    ## Time format is the time layout that should be used to interpret the
     ## json_time_key.  The time must be `unix`, `unix_ms` or a time in the
     ## "reference time".
     #echo "json_time_format =\"unix_ms\""

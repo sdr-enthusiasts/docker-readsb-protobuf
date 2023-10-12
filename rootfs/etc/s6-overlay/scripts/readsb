@@ -235,7 +235,7 @@ fi
 # Handle "--net-vrs-port=<ports>"
 if [[ -n "$READSB_NET_VRS_PORT" ]]; then
     READSB_CMD+=("--net-vrs-port=$READSB_NET_VRS_PORT")
-    
+
 # Telegraf needs the JSON output from readsb, so if this hasn't been enabled by the user, enable it
 elif [ -z "$INFLUXDB_SKIP_AIRCRAFT" ] && { [ -n "$INFLUXDBURL" ] || [ -n "$ENABLE_PROMETHEUS" ]; } then
     READSB_NET_VRS_PORT="33333"

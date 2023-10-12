@@ -42,7 +42,7 @@ for key in {71..0}; do
 
   # Prepare output - add measurement
   output="polar_range,bearing=$(printf "%.2d " "$bearing") range=${range[$key]} $timestamp"
-  
+
   echo "$output"
 
   bearing=$((bearing+1))

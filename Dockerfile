@@ -1,9 +1,11 @@
 # Declare the telegraf image so we can copy telegraf binary out of it,
 # and avoid headache of having to add apt key / apt repo and/or build from src.
+# hadolint ignore=DL3008,SC2086,SC2039,SC2068,DL3006
 FROM telegraf AS telegraf
 RUN touch /tmp/.nothing
 
 # Build final image
+# hadolint ignore=DL3008,SC2086,SC2039,SC2068,DL3006
 FROM ghcr.io/sdr-enthusiasts/docker-baseimage:readsb-full
 
 # Copy telegraf
@@ -82,6 +84,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Copy container filesystem
 COPY rootfs/ /
 
+# hadolint ignore=DL3008,SC2086,SC2039,SC2068,DL3007,DL3008,DL3006
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
