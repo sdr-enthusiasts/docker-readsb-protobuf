@@ -24,7 +24,7 @@ jobs:
         run: |
           set -x
           docker run --rm --entrypoint cat ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE }} /VERSIONS
-          echo "::set-output name=currverhash::$(docker run --rm --entrypoint md5sum ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE }} /VERSIONS)"
+          echo "currverhash=$(docker run --rm --entrypoint md5sum ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE }} /VERSIONS)" >> $GITHUB_OUTPUT
 
   latest_version:
     name: Check latest versions
@@ -43,7 +43,7 @@ jobs:
         run: |
           set -x
           docker run --rm --entrypoint cat local_image_for_versions /VERSIONS
-          echo "::set-output name=latestverhash::$(docker run --rm --entrypoint md5sum local_image_for_versions /VERSIONS)"
+          echo "latestverhash=$(docker run --rm --entrypoint md5sum local_image_for_versions /VERSIONS)" >> $GITHUB_OUTPUT
 
   display_versions:
     name: Display versions
