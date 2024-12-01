@@ -20,7 +20,7 @@ This image will configure a software-defined radio (SDR) to receive and decode M
 - [`sdr-enthusiasts/docker-radarbox`](https://github.com/sdr-enthusiasts/docker-radarbox) to feed ADSB data into [radarbox.com](https://www.radarbox.com)
 - [`sdr-enthusiasts/docker-opensky-network`](https://github.com/sdr-enthusiasts/docker-opensky-network) to feed ADSB data into [opensky-network.org](https://opensky-network.org/)
 - [`sdr-enthusiasts/docker-planefinder`](https://github.com/sdr-enthusiasts/docker-planefinder) to feed ADSB data into [planefinder.net](https://planefinder.net/)
-- `mikenye/adsb-to-influxdb` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualisation with [Grafana](https://grafana.com) and/or other tools
+- `mikenye/adsb-to-influxdb` to feed data into your own instance of [InfluxDB](https://docs.influxdata.com/influxdb/), for visualization with [Grafana](https://grafana.com) and/or other tools
 - Any other tools that can receive Beast, BeastReduce, Basestation or the raw data feed from `readsb` or `dump1090` and their variants
 
 bladeRF & plutoSDR are untested - I don't own bladeRF or plutoSDR hardware (only RTL2832U as outlined above), but support for the devices is compiled in. If you have the hardware and would be willing to test, please [open an issue on GitHub](https://github.com/sdr-enthusiasts/docker-readsb-protobuf/issues).
@@ -63,7 +63,7 @@ Please see: [Buster-Docker-Fixes](https://github.com/fredclausen/Buster-Docker-F
   - [Ports](#ports)
   - [Paths \& Volumes](#paths--volumes)
   - [Auto-Gain system](#auto-gain-system)
-    - [Initialisation Stage](#initialisation-stage)
+    - [Initialization Stage](#initialization-stage)
     - [Fine-Tuning Stage](#fine-tuning-stage)
     - [Finished Stage](#finished-stage)
     - [State/Log/Stats Files](#statelogstats-files)
@@ -200,7 +200,7 @@ rtlsdr: error opening the RTLSDR device: Device or resource busy
 
 Plug in your USB radio, and run the command `lsusb`. Find your radio. It'll look something like this:
 
-```
+```shell
 Bus 001 Device 004: ID 0bda:2832 Realtek Semiconductor Corp. RTL2832U DVB-T
 ```
 
@@ -288,7 +288,6 @@ volumes:
 services:
   readsb:
     image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
-    tty: true
     container_name: readsb
     hostname: readsb
     restart: always
@@ -328,7 +327,7 @@ docker exec -it readsb viewadsb
 
 Which should display a departure-lounge-style screen showing all the aircraft being tracked, for example:
 
-```
+```shell
  Hex    Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   RSSI  Msgs  Ti -
 ────────────────────────────────────────────────────────────────────────────────
  7C801C S                     8450  256  296                   -28.0    14  1
@@ -535,7 +534,7 @@ These variables control the auto-gain system (explained further below). These sh
 
 | Variable                               | Description                                                                                                                         | Default                            |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `AUTOGAIN_INITIAL_PERIOD`              | How long each gain level should be measured during auto-gain initialisation (ie: "roughing in"), in seconds.                        | `7200` (2 hours)                   |
+| `AUTOGAIN_INITIAL_PERIOD`              | How long each gain level should be measured during auto-gain initialization (ie: "roughing in"), in seconds.                        | `7200` (2 hours)                   |
 | `AUTOGAIN_INITIAL_MSGS_ACCEPTED`       | How many locally accepted messages should be received per gain level during auto-gain initialisaion to ensure accurate measurement. | `1000000`                          |
 | `AUTOGAIN_FINETUNE_PERIOD`             | How long each gain level should be measured during auto-gain fine-tuning, in seconds.                                               | `604800` (7 days)                  |
 | `AUTOGAIN_FINETUNE_MSGS_ACCEPTED`      | How many locally accepted messages should be received per gain level during auto-gain fine-tuning to ensure accurate measurement.   | `7000000`                          |
@@ -611,15 +610,15 @@ During each process, gain levels are ranked as follows:
 - The range achievable by each gain level
 - The signal-to-noise ratio of the receiver
 
-The ranking process is done by sorting the gain levels for each statistic from worst to best, then awarding points. 0 points are awarded for the worst gain level, 1 point for the next gain level all the way up to several points for the best gain level (total number of points is the number of gain levels tested). The number of points for each gain level is totalled, and the optimal gain level is the level with the largest number of points. Any gain level with a percentage of "strong signals" outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` is discarded.
+The ranking process is done by sorting the gain levels for each statistic from worst to best, then awarding points. 0 points are awarded for the worst gain level, 1 point for the next gain level all the way up to several points for the best gain level (total number of points is the number of gain levels tested). The number of points for each gain level is totaled, and the optimal gain level is the level with the largest number of points. Any gain level with a percentage of "strong signals" outside of `AUTOGAIN_PERCENT_STRONG_MESSAGES_MAX` and `AUTOGAIN_PERCENT_STRONG_MESSAGES_MIN` is discarded.
 
 Using this method, auto-gain tried to achieve the best balance of range, tracks and signal-to-noise ratio, whilst ensuring an appropriate number of "strong signals".
 
 The auto-gain system will work as follows:
 
-### Initialisation Stage
+### Initialization Stage
 
-In the initialisation process:
+In the initialization process:
 
 1. `readsb` is set to maximum gain (`AUTOGAIN_MAX_GAIN_VALUE`).
 1. Results are collected up to `AUTOGAIN_INITIAL_PERIOD` (up to 2 hours by default).
@@ -634,12 +633,12 @@ Auto-gain then moves onto the fine-tuning stage.
 
 In the fine-tuning process:
 
-1. `readsb` is set to maximum gain level chosen at the end of the initialisation process.
+1. `readsb` is set to maximum gain level chosen at the end of the initialization process.
 1. Results are collected up to `AUTOGAIN_FINETUNE_PERIOD` (7 days by default).
 1. Check to ensure at least `AUTOGAIN_FINETUNE_MSGS_ACCEPTED` messages have been locally accepted (7,000,000 by default). If not, continue collecting data for up to 48 hours. This combination of time and number of messages ensures we have enough data to make an accurate assessment of each gain level, and by using 7 days this ensures any peaks/troughs in data due to quiet/busy days of the week do not skew results.
-1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialisation process is reached.
+1. Gain level is lowered by one level until the minimum gain level chosen at the end of the initialization process is reached.
 
-At this point, all of the tested gain levels are ranked based on the criterea discussed above.
+At this point, all of the tested gain levels are ranked based on the criteria discussed above.
 
 The gain level with the most points is chosen, and `readsb` is set to this gain level.
 
@@ -647,7 +646,7 @@ Auto-gain then moves onto the finished stage.
 
 ### Finished Stage
 
-In the finished stage, auto-gain does nothing (as `readsb` is operating at optimal gain) for `AUTOGAIN_FINISHED_PERIOD` (1 year by default). After this time, auto-gain reverts to the initialisation stage and the entire process is completed again. This makes sure your configuration is always running at the optimal gain level as your RTLSDR ages.
+In the finished stage, auto-gain does nothing (as `readsb` is operating at optimal gain) for `AUTOGAIN_FINISHED_PERIOD` (1 year by default). After this time, auto-gain reverts to the initialization stage and the entire process is completed again. This makes sure your configuration is always running at the optimal gain level as your RTLSDR ages.
 
 ### State/Log/Stats Files
 
@@ -655,11 +654,11 @@ All files for auto-gain are located at `/run/autogain` within the container. The
 
 ### Forcing auto-gain to re-run from scratch
 
-Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Restart the container and auto-gain will detect this and re-start at initialisation stage.
+Run `docker exec <container_name> rm /run/autogain/*` to remove all existing auto-gain state data. Restart the container and auto-gain will detect this and re-start at initialization stage.
 
 ## Advanced Usage: Creating an MLAT Hub
 
-There may be reasons you wish to use `readsb` to combine MLAT feeds from different collectors, to feed into visualisation tools (eg: `mikenye/tar1090`) or data collectors (eg: `mikenye/adsb-to-influxdb`).
+There may be reasons you wish to use `readsb` to combine MLAT feeds from different collectors, to feed into visualization tools (eg: `mikenye/tar1090`) or data collectors (eg: `mikenye/adsb-to-influxdb`).
 
 To do this, you can create a second container to act as an MLAT hub.
 
@@ -669,7 +668,6 @@ Here are example service definitions (from a `docker-compose.yml` file) for `rea
 ---
 readsb:
   image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
-  tty: true
   container_name: readsb
   hostname: readsb
   restart: always
@@ -704,7 +702,6 @@ readsb:
 
 mlathub:
   image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf:latest
-  tty: true
   container_name: mlathub
   hostname: mlathub
   restart: always
@@ -724,7 +721,6 @@ mlathub:
 
 adsb2influxdb:
   image: mikenye/adsb-to-influxdb:latest
-  tty: true
   container_name: adsb2influxdb
   restart: always
   environment:
@@ -737,7 +733,6 @@ adsb2influxdb:
 
 tar1090:
   image: mikenye/tar1090:latest
-  tty: true
   container_name: tar1090
   restart: always
   depends_on:
@@ -812,7 +807,7 @@ Tags and fields used for this measurement should match [Virtual Radar Server's J
 | `SpdTyp` | Number  | The type of speed that Spd represents. Only used with raw feeds. `0`/`missing` = ground speed, `1` = ground speed reversing, `2` = indicated air speed, `3` = true air speed. |
 | `Sqk`    | Number  | The squawk as a decimal number (e.g. a squawk of `7654` is passed as `7654`, not `4012`).                                                                                     |
 | `Tisb`   | Boolean | True if the last message received for the aircraft was from a TIS-B source.                                                                                                   |
-| `TrkH`   | Boolean | True if Trak is the aircraft's heading, false if it's the ground track. Default to ground track until told otherwise.                                                         |
+| `TrkH`   | Boolean | True if Track is the aircraft's heading, false if it's the ground track. Default to ground track until told otherwise.                                                        |
 | `VsiT`   | Number  | `0` = vertical speed is barometric, `1` = vertical speed is geometric. Default to barometric until told otherwise.                                                            |
 | `host`   | String  | The hostname of the container.                                                                                                                                                |
 
@@ -900,7 +895,7 @@ Field keys should be as-per the `StatisticEntry` message schema from [`readsb.pr
 | `remote_modeac`                  | float | Number of Mode A / C messages received.                                                                                                                                                      |
 | `remote_modes`                   | float | Number of Mode S messages received.                                                                                                                                                          |
 | `tracks_mlat_position`           | float | Tracks consisting of a position derived from MLAT                                                                                                                                            |
-| `tracks_new`                     | float | Total tracks (aircrafts) created. Each track represents a unique aircraft and persists for up to 5 minutes.                                                                                  |
+| `tracks_new`                     | float | Total tracks (aircraft) created. Each track represents a unique aircraft and persists for up to 5 minutes.                                                                                   |
 | `tracks_single_message`          | float | Tracks consisting of only a single message. These are usually due to message decoding errors that produce a bad aircraft address.                                                            |
 | `tracks_with_position`           | float | Tracks consisting of a position.                                                                                                                                                             |
 
