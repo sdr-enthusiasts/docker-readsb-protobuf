@@ -33,7 +33,7 @@ jobs:
       latestverhash: ${{ steps.latest-version.outputs.latestverhash }}
     steps:
       - name: Build image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.11.0
         with:
           push: false
           load: true
