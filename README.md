@@ -1,5 +1,8 @@
 # sdr-enthusiasts/docker-readsb-protobuf
 
+> [!WARNING]
+> This repo is archived, and the corresponding container(s) are no longer actively maintained. When building a new stack, or updating your existing stack of ADS-B related software, we strongly recommend that you replace `readsb-protobuf` by the [Ultrafeeder](https://github.com/sdr-enthusiasts/docker-adsb-ultrafeeder) container, which is much better supported and has many more options.
+
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mikenye/readsb-protobuf/latest)](https://hub.docker.com/r/mikenye/readsb-protobuf)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
 
